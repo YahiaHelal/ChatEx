@@ -1,6 +1,7 @@
 package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.LogManager;
+import com.yahia.anotherchatapplicatoin.client.ClientHandler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -14,14 +15,14 @@ import java.util.logging.Logger;
 
 public class Server {
 
-    private final int SERVER_PORT = 8080;
-    private final ArrayList<String> CLIENTS = new ArrayList<>();
+    private final int SERVER_PORT;
 
     private ServerSocket serverSocket;
     private final Logger LOGGER = LogManager.getLogger();
 
 
-    public Server() {
+    public Server(int serverPort) {
+        this.SERVER_PORT = serverPort;
         try {
             connect();
             listen();
@@ -37,15 +38,13 @@ public class Server {
 
 
 
-    // TODO: receive client insults in a new thread
     private void listen(){
         new Thread(() -> {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    CLIENTS.add(clientSocket.getInetAddress().getHostAddress());
                     LOGGER.log(Level.FINE, String.format("Client %s connected to server %s:%d successfully", clientSocket.getInetAddress().getHostAddress(), getServerAddress(), SERVER_PORT));
-                    new Thread(() -> receiveMessage(clientSocket)).start();
+                    new Thread(() -> new ClientHandler(clientSocket)).start();
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
                 }
@@ -62,7 +61,7 @@ public class Server {
     }
 
 
-    // TODO: propagate client message through server, to all connected clients
+    // TODO: re-write in client handler
     public void sendMessage(Socket clientSocket, String message) {
         try(PrintWriter out = new PrintWriter(clientSocket.getOutputStream());) {
             out.println(message);
@@ -71,20 +70,6 @@ public class Server {
             LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
         }
 
-    }
-
-    public void receiveMessage(Socket clientSocket) {
-      try {
-          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
-          String msg;
-          while((msg = in.readLine()) != null) {
-              System.out.println(msg);
-              LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, clientSocket.getInetAddress().getHostAddress()));
-          }
-      }catch (IOException e) {
-          LOGGER.log(Level.WARNING, "Server couldn't receive client message");
-      }
     }
 
 }
