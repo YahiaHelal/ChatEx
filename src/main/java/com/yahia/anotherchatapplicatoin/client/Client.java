@@ -1,7 +1,6 @@
 package com.yahia.anotherchatapplicatoin.client;
 
 import com.yahia.anotherchatapplicatoin.LogManager;
-import com.yahia.anotherchatapplicatoin.server.Server;
 
 import java.io.*;
 import java.net.Socket;
@@ -23,10 +22,11 @@ public class Client {
         try {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new PrintWriter(clientSocket.getOutputStream());
+            LOGGER.log(Level.INFO, "Messengers initialized");
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while initializing messengers");
         }
-        LOGGER.log(Level.INFO, "Messengers initialized");
+
     }
 
 

@@ -9,6 +9,8 @@ import java.util.logging.SimpleFormatter;
 
 public class LogManager {
     private static final Logger logger = Logger.getLogger("Another-Chat-App");
+    private static final Level RUN_LOG_LEVEL = Level.INFO;
+    private static final Level DEBUG_LOG_LEVEL = Level.ALL;
     static {
         try {
             Locale.setDefault(Locale.US); // date and time in english no matter what system language is
@@ -17,7 +19,8 @@ public class LogManager {
             fh.setFormatter(new SimpleFormatter());
 
             logger.addHandler(fh);
-            logger.setLevel(Level.INFO); // globally
+            logger.setLevel(DEBUG_LOG_LEVEL); // globally
+            logger.log(Level.CONFIG, String.format("Logging Level Set to %s", DEBUG_LOG_LEVEL));
 
         }catch(IOException e) {
             System.out.println(e.getMessage());
