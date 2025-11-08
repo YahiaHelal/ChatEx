@@ -20,6 +20,7 @@ public class LogManager {
 
             logger.addHandler(fh);
             logger.setLevel(DEBUG_LOG_LEVEL); // globally
+            logger.setUseParentHandlers(false); // no console logging
             logger.log(Level.CONFIG, String.format("Logging Level Set to %s", DEBUG_LOG_LEVEL));
 
         }catch(IOException e) {

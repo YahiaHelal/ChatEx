@@ -20,8 +20,6 @@ public class Server {
     private ServerSocket serverSocket;
     private final Logger LOGGER = LogManager.getLogger();
 
-    private BufferedReader in;
-    private PrintWriter out;
 
     public Server() {
         try {
@@ -32,16 +30,6 @@ public class Server {
         }
     }
 
-    private void initMessengers(Socket socket) {
-        try {
-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            out = new PrintWriter(socket.getOutputStream());
-            LOGGER.log(Level.CONFIG, "Messengers Initialized");
-        }catch(IOException e) {
-            LOGGER.log(Level.SEVERE, "Error while initializing messengers");
-        }
-
-    }
     private void connect() throws IOException {
         serverSocket = new ServerSocket(SERVER_PORT);
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
@@ -51,16 +39,18 @@ public class Server {
 
     // TODO: receive client insults in a new thread
     private void listen(){
-        try {
-            Socket clientSocket = serverSocket.accept();
-            initMessengers(clientSocket);
-            CLIENTS.add(clientSocket.getInetAddress().getHostAddress());
-            LOGGER.log(Level.FINE, String.format("Client %s connected to server %s:%d successfully", clientSocket.getInetAddress().getHostAddress(), getServerAddress(), SERVER_PORT));
-            new Thread(this::receiveMessage).start();
-        }catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Server couldn't connect to client");
-        }
-
+        new Thread(() -> {
+            while(true) {
+                try {
+                    Socket clientSocket = serverSocket.accept();
+                    CLIENTS.add(clientSocket.getInetAddress().getHostAddress());
+                    LOGGER.log(Level.FINE, String.format("Client %s connected to server %s:%d successfully", clientSocket.getInetAddress().getHostAddress(), getServerAddress(), SERVER_PORT));
+                    new Thread(() -> receiveMessage(clientSocket)).start();
+                }catch (IOException e) {
+                    LOGGER.log(Level.WARNING, "Server couldn't connect to client");
+                }
+            }
+        }).start();
     }
 
 
@@ -73,26 +63,28 @@ public class Server {
 
 
     // TODO: propagate client message through server, to all connected clients
-    public void sendMessage(String message) {
-        out.println(message);
+    public void sendMessage(Socket clientSocket, String message) {
+        try(PrintWriter out = new PrintWriter(clientSocket.getOutputStream());) {
+            out.println(message);
+            LOGGER.log(Level.INFO, "Server sent client message %s successfully", message);
+        }catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
+        }
+
     }
 
-    public void receiveMessage() {
-        try {
-            String text = in.readLine();
-            LOGGER.log(Level.INFO, String.format("Client sent a message %s", text));
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error while collecting Client message");
-        }
-//        try {
-//            while((msg = in.readLine()) != null) {
-//                text = text.concat(msg);
-//                break;
-//            }
-//        }catch (IOException e) {
-//            LOGGER.log(Level.SEVERE, "Error while collecting Client message");
-//        }
-//        return text;
+    public void receiveMessage(Socket clientSocket) {
+      try {
+          BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+
+          String msg;
+          while((msg = in.readLine()) != null) {
+              System.out.println(msg);
+              LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, clientSocket.getInetAddress().getHostAddress()));
+          }
+      }catch (IOException e) {
+          LOGGER.log(Level.WARNING, "Server couldn't receive client message");
+      }
     }
 
 }

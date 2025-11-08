@@ -38,10 +38,14 @@ public class Client {
         }
     }
 
+    //TODO: mark a word to end sending a message
     public void sendMessage(String message) {
         out.println(message);
+        out.flush();
     }
 
+
+    //TODO: receive messages in a new thread, multiple servers may try to write at the same time
     public String receiveMessage() {
         String text = "", msg;
         try {

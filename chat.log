@@ -1,34 +1,14 @@
-Nov 08, 2025 2:40:45 AM com.yahia.anotherchatapplicatoin.LogManager <clinit>
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.LogManager <clinit>
 CONFIG: Logging Level Set to ALL
-Nov 08, 2025 2:40:45 AM com.yahia.anotherchatapplicatoin.server.Server connect
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.server.Server connect
 INFO: Server running on 0.0.0.0:8080
-Nov 08, 2025 2:40:45 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
-INFO: Messengers initialized
-Nov 08, 2025 2:40:45 AM com.yahia.anotherchatapplicatoin.server.Server initMessengers
-CONFIG: Messengers Initialized
-Nov 08, 2025 2:40:45 AM com.yahia.anotherchatapplicatoin.server.Server listen
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.server.Server lambda$listen$1
 FINE: Client 192.168.1.3 connected to server 0.0.0.0:8080 successfully
-Nov 08, 2025 2:41:55 AM com.yahia.anotherchatapplicatoin.LogManager <clinit>
-CONFIG: Logging Level Set to ALL
-Nov 08, 2025 2:41:55 AM com.yahia.anotherchatapplicatoin.server.Server connect
-INFO: Server running on 0.0.0.0:8080
-Nov 08, 2025 2:41:55 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
 INFO: Messengers initialized
-Nov 08, 2025 2:41:55 AM com.yahia.anotherchatapplicatoin.server.Server initMessengers
-CONFIG: Messengers Initialized
-Nov 08, 2025 2:41:55 AM com.yahia.anotherchatapplicatoin.server.Server listen
-FINE: Client 192.168.1.3 connected to server 0.0.0.0:8080 successfully
-Nov 08, 2025 2:43:46 AM com.yahia.anotherchatapplicatoin.LogManager <clinit>
-CONFIG: Logging Level Set to ALL
-Nov 08, 2025 2:43:46 AM com.yahia.anotherchatapplicatoin.server.Server connect
-INFO: Server running on 0.0.0.0:8080
-Nov 08, 2025 2:43:46 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
-INFO: Messengers initialized
-Nov 08, 2025 2:43:46 AM com.yahia.anotherchatapplicatoin.server.Server initMessengers
-CONFIG: Messengers Initialized
-Nov 08, 2025 2:43:46 AM com.yahia.anotherchatapplicatoin.server.Server listen
-FINE: Client 192.168.1.3 connected to server 0.0.0.0:8080 successfully
-Nov 08, 2025 2:49:57 AM com.yahia.anotherchatapplicatoin.LogManager <clinit>
-CONFIG: Logging Level Set to ALL
-Nov 08, 2025 2:49:59 AM com.yahia.anotherchatapplicatoin.client.Client connect
-SEVERE: Client couldn't connect to 0.0.0.0:8080
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.server.Server receiveMessage
+INFO: Server received a message: no iam the server, suck my wires from 192.168.1.3
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.server.Server receiveMessage
+INFO: Server received a message: end from 192.168.1.3
+Nov 08, 2025 3:46:52 AM com.yahia.anotherchatapplicatoin.server.Server receiveMessage
+INFO: Server received a message: sdfasf from 192.168.1.3
