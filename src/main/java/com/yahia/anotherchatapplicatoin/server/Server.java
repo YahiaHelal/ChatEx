@@ -1,11 +1,9 @@
 package com.yahia.anotherchatapplicatoin.server;
 
-import com.yahia.anotherchatapplicatoin.LogManager;
-import com.yahia.anotherchatapplicatoin.client.ClientHandler;
+import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.handlers.ClientHandler;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -16,13 +14,14 @@ import java.util.logging.Logger;
 public class Server {
 
     private final int SERVER_PORT;
-
+    private final ArrayList<Socket> CLIENTS;
     private ServerSocket serverSocket;
     private final Logger LOGGER = LogManager.getLogger();
 
 
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
+        CLIENTS = new ArrayList<>();
         try {
             connect();
             listen();
@@ -43,7 +42,9 @@ public class Server {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    LOGGER.log(Level.FINE, String.format("Client %s connected to server %s:%d successfully", clientSocket.getInetAddress().getHostAddress(), getServerAddress(), SERVER_PORT));
+                    CLIENTS.add(clientSocket);
+                    LOGGER.log(Level.FINE, String.format("Number of clients connected to the server: %d", CLIENTS.size()));
+                        LOGGER.log(Level.FINE, String.format("Client %s connected to server %s successfully", clientSocket.getRemoteSocketAddress(), clientSocket.getLocalAddress().getHostAddress()));
                     new Thread(() -> new ClientHandler(clientSocket)).start();
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");

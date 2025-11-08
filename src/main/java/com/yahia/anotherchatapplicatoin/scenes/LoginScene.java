@@ -1,6 +1,6 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
-import com.yahia.anotherchatapplicatoin.Utils;
+import com.yahia.anotherchatapplicatoin.utils.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -33,7 +33,7 @@ public class LoginScene{
         loginGrid.add(ipAddressTextField, 0, 1);
         loginGrid.add(portTextField, 0, 2);
         loginGrid.add(loginButton, 0, 3);
-        Utils.setGridSpacing(loginGrid);
+        LayoutUtils.setLoginGridSpacing(loginGrid);
         loginButton.setPrefWidth(75);
         usernameTextField.setPrefWidth(200);
 
@@ -46,5 +46,8 @@ public class LoginScene{
 
     public Scene getScene() {
         return loginScene;
+    }
+    public Button getLoginButton() {
+        return loginButton;
     }
 }

@@ -1,6 +1,6 @@
 package com.yahia.anotherchatapplicatoin.client;
 
-import com.yahia.anotherchatapplicatoin.LogManager;
+import com.yahia.anotherchatapplicatoin.managers.LogManager;
 
 import java.io.*;
 import java.net.Socket;
