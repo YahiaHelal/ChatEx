@@ -1,6 +1,7 @@
 package com.yahia.anotherchatapplicatoin.handlers;
 
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.server.Server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,18 +10,17 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class ClientHandler implements Runnable {
-    private final Logger LOGGER = LogManager.getLogger();
+public class ServerClientHandler implements Runnable {
+    private final Logger LOGGER;
     private final Socket CLIENT_SOCKET;
+    private final Server chatServer;
 
-
-    public ClientHandler(Socket clientSocket) {
+    public ServerClientHandler(Socket clientSocket, Server chatServer) {
         this.CLIENT_SOCKET = clientSocket;
-
+        LOGGER = LogManager.getLogger();
+        this.chatServer = chatServer;
     }
 
-    // TODO: propagate client message to all clients
-    private void sendMessage() {}
     @Override
     public void run() {
         try {
@@ -28,6 +28,7 @@ public class ClientHandler implements Runnable {
             String msg;
             while((msg = in.readLine()) != null) {
                 LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, CLIENT_SOCKET.getInetAddress().getHostAddress()));
+                chatServer.broadCastMessage(msg);
             }
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't receive client message");

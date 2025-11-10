@@ -1,34 +1,64 @@
 package com.yahia.anotherchatapplicatoin.server;
 
+import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
-import com.yahia.anotherchatapplicatoin.handlers.ClientHandler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Server {
 
     private final int SERVER_PORT;
-    private final ArrayList<Socket> CLIENTS;
+    private final Set<Socket> CLIENTS;
+    private final Logger LOGGER;
     private ServerSocket serverSocket;
-    private final Logger LOGGER = LogManager.getLogger();
 
 
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
-        CLIENTS = new ArrayList<>();
+        CLIENTS = ConcurrentHashMap.newKeySet();
+        LOGGER = LogManager.getLogger();
+    }
+
+    public void start() {
         try {
             connect();
             listen();
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
+            LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s:%d", serverSocket.getInetAddress().getHostAddress(), this.SERVER_PORT));
         }
     }
+
+    public String getServerAddress() {
+        return serverSocket.getInetAddress().getHostAddress();
+    }
+    public int getServerPort() {
+        return SERVER_PORT;
+    }
+
+
+    public void sendMessage(Socket clientSocket, String message) {
+        try {
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+            out.println(message);
+            LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", clientSocket.getInetAddress().getHostAddress()));
+        }catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
+        }
+
+    }
+    public void broadCastMessage(String message) {
+        for(Socket client: CLIENTS) {
+            sendMessage(client, message);
+        }
+    }
+
 
     private void connect() throws IOException {
         serverSocket = new ServerSocket(SERVER_PORT);
@@ -43,34 +73,18 @@ public class Server {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     CLIENTS.add(clientSocket);
-                    LOGGER.log(Level.FINE, String.format("Number of clients connected to the server: %d", CLIENTS.size()));
-                        LOGGER.log(Level.FINE, String.format("Client %s connected to server %s successfully", clientSocket.getRemoteSocketAddress(), clientSocket.getLocalAddress().getHostAddress()));
-                    new Thread(() -> new ClientHandler(clientSocket)).start();
+                    LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+                    new Thread(new ServerClientHandler(clientSocket, this)).start();
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
                 }
             }
         }).start();
+
+
     }
 
 
-    public String getServerAddress() {
-        return serverSocket.getInetAddress().getHostAddress();
-    }
-    public int getServerPort() {
-        return SERVER_PORT;
-    }
 
-
-    // TODO: re-write in client handler
-    public void sendMessage(Socket clientSocket, String message) {
-        try(PrintWriter out = new PrintWriter(clientSocket.getOutputStream());) {
-            out.println(message);
-            LOGGER.log(Level.INFO, "Server sent client message %s successfully", message);
-        }catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
-        }
-
-    }
 
 }

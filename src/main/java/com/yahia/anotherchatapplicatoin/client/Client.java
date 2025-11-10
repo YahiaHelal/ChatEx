@@ -21,7 +21,7 @@ public class Client {
     private void initMessengers(){
         try {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new PrintWriter(clientSocket.getOutputStream());
+            out = new PrintWriter(clientSocket.getOutputStream(), true);
             LOGGER.log(Level.INFO, "Messengers initialized");
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while initializing messengers");
@@ -41,12 +41,11 @@ public class Client {
     //TODO: mark a word to end sending a message
     public void sendMessage(String message) {
         out.println(message);
-        out.flush();
     }
 
 
     //TODO: receive messages in a new thread, multiple servers may try to write at the same time
-    public String receiveMessage() {
+    private void listen() {
         String text = "", msg;
         try {
             while((msg = in.readLine()) != null) {
@@ -55,6 +54,5 @@ public class Client {
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while collecting server message");
         }
-        return text;
     }
 }
