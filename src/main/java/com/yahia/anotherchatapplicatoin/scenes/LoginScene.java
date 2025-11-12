@@ -1,10 +1,13 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
+import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+
+import java.io.IOException;
 
 public class LoginScene{
     private TextField usernameTextField;
@@ -38,9 +41,21 @@ public class LoginScene{
         usernameTextField.setPrefWidth(200);
 
     }
+    private void addActions() {
+        loginButton.setOnAction(actionEvent -> {
+            int serverPort = Integer.parseInt(portTextField.getText());
+            try {
+                new Client(ipAddressTextField.getText(), serverPort, usernameTextField.getText());
+            }catch (IOException e) {
+                //TODO: alert the error to user
+            }
+
+        });
+    }
 
     public LoginScene() {
         initControls();
+        addActions();
         buildUi();
     }
 

@@ -12,10 +12,22 @@ public class Client {
     private BufferedReader in;
     private PrintWriter out;
     private Socket clientSocket;
+    private String clientName;
 
-    public Client(String serverIp, int serverPort) {
+    public Client(String serverIp, int serverPort, String clientName) throws IOException {
+        this.clientName = clientName;
         connect(serverIp, serverPort);
         initMessengers();
+
+    }
+
+    //TODO: mark a word to end sending a message
+    public void sendMessage(String message) {
+        out.println(prefixMessage(message));
+    }
+
+    public void setClientName(String name) {
+        this.clientName = name;
     }
 
     private void initMessengers(){
@@ -30,18 +42,15 @@ public class Client {
     }
 
 
-    private void connect(String serverIp, int serverPort) {
-        try {
-            clientSocket = new Socket(serverIp, serverPort);
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format("Client couldn't connect to %s:%d", serverIp, serverPort));
-        }
+    private void connect(String serverIp, int serverPort) throws IOException{
+        clientSocket = new Socket(serverIp, serverPort);
     }
 
-    //TODO: mark a word to end sending a message
-    public void sendMessage(String message) {
-        out.println(message);
+    private String prefixMessage(String message) {
+        return String.format("[%s]: %s", clientName, message);
     }
+
+
 
 
     //TODO: receive messages in a new thread, multiple servers may try to write at the same time
