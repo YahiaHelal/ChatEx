@@ -8,10 +8,10 @@ public class Main {
        Server chatServer = new  Server(8080);
        chatServer.start();
 
-       Client idiotClient1 = new Client(chatServer.getServerAddress(), chatServer.getServerPort());
-       Client idiotClient2 = new Client(chatServer.getServerAddress(), chatServer.getServerPort());
-       Client idiotClient3 = new Client(chatServer.getServerAddress(), chatServer.getServerPort());
+       Client idiotClient1 = new Client("0.0.0.0", 8080);
+       Client idiotClient2 = new Client("0.0.0.0", 8080);
+       Client idiotClient3 = new Client("0.0.0.0", 8080);
 
-       idiotClient3.sendMessage("Hello from idiot client 1 to all idiots around");
+       idiotClient1.sendMessage("Hello from idiot client 2 to all idiots around");
     }
 }

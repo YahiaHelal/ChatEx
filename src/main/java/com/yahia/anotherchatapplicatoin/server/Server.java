@@ -2,6 +2,7 @@ package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,7 +16,7 @@ import java.util.logging.Logger;
 public class Server {
 
     private final int SERVER_PORT;
-    private final Set<Socket> CLIENTS;
+    private final Set<ServerClientHandler> CLIENTS;
     private final Logger LOGGER;
     private ServerSocket serverSocket;
 
@@ -28,7 +29,7 @@ public class Server {
 
     public void start() {
         try {
-            connect();
+            run();
             listen();
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s:%d", serverSocket.getInetAddress().getHostAddress(), this.SERVER_PORT));
@@ -36,7 +37,7 @@ public class Server {
     }
 
     public String getServerAddress() {
-        return serverSocket.getInetAddress().getHostAddress();
+        return SocketUtils.getServerSocketAddress(serverSocket);
     }
     public int getServerPort() {
         return SERVER_PORT;
@@ -47,41 +48,51 @@ public class Server {
         try {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             out.println(message);
-            LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", clientSocket.getInetAddress().getHostAddress()));
+
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
         }
 
     }
     public void broadCastMessage(String message) {
-        for(Socket client: CLIENTS) {
-            sendMessage(client, message);
+        for(ServerClientHandler client: CLIENTS) {
+            client.sendMessage(message);
         }
     }
 
 
-    private void connect() throws IOException {
+    private void run() throws IOException {
         serverSocket = new ServerSocket(SERVER_PORT);
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
     }
+    private void addClient(ServerClientHandler clientHandler) {
+        CLIENTS.add(clientHandler);
+    }
+
+    //TODO: client can disconnect form the server
+    private void removeClient(ServerClientHandler clientHandler) {
+        CLIENTS.remove(clientHandler);
+    }
 
 
-
+    //TODO: store client handlers instead of sockets, each holding it's PrintWriter
     private void listen(){
         new Thread(() -> {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    CLIENTS.add(clientSocket);
+                    ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
+
+                    //BUG: same client info with different object reference will be stored normally
+                    addClient(clientHandler);
+
                     LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-                    new Thread(new ServerClientHandler(clientSocket, this)).start();
+                    new Thread(clientHandler).start();
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
                 }
             }
         }).start();
-
-
     }
 
 

@@ -16,6 +16,8 @@ module org.example.anotherchatapplicatoin {
     opens com.yahia.anotherchatapplicatoin.managers to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.handlers;
     opens com.yahia.anotherchatapplicatoin.handlers to javafx.fxml;
-    exports com.yahia.anotherchatapplicatoin.utils;
-    opens com.yahia.anotherchatapplicatoin.utils to javafx.fxml;
+    opens com.yahia.anotherchatapplicatoin.utils.ui to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.utils.ui;
+    opens com.yahia.anotherchatapplicatoin.utils.backend to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.utils.backend;
 }

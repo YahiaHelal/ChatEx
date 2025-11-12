@@ -1,36 +1,16 @@
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.managers.LogManager <clinit>
-CONFIG: Logging Level Set to ALL
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server connect
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.server.Server run
 INFO: Server running on 0.0.0.0:8080
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.client.Client initMessengers
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
 INFO: Messengers initialized
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server lambda$listen$0
-FINE: Number of Clients connected to 0.0.0.0 is 1
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.client.Client initMessengers
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
 INFO: Messengers initialized
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.client.Client initMessengers
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
 INFO: Messengers initialized
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler run
+INFO: Server received a message: Hello from idiot client 2 to all idiots around from 192.168.1.3
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler sendMessage
 INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler sendMessage
 INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server lambda$listen$0
-FINE: Number of Clients connected to 0.0.0.0 is 2
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server lambda$listen$0
-FINE: Number of Clients connected to 0.0.0.0 is 3
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler run
-INFO: Server received a message: Hello from idiot client 1 to all idiots around from 192.168.1.3
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 10, 2025 10:34:18 PM com.yahia.anotherchatapplicatoin.server.Server sendMessage
+Nov 12, 2025 2:05:22 AM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler sendMessage
 INFO: Message delivered to client 192.168.1.3 successfully

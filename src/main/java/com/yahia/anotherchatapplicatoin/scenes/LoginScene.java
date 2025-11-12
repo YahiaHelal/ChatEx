@@ -1,6 +1,6 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
-import com.yahia.anotherchatapplicatoin.utils.LayoutUtils;
+import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
