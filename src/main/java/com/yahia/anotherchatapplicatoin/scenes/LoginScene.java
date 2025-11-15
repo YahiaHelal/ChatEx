@@ -1,8 +1,9 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
-import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
+import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -36,7 +37,7 @@ public class LoginScene{
         loginGrid.add(ipAddressTextField, 0, 1);
         loginGrid.add(portTextField, 0, 2);
         loginGrid.add(loginButton, 0, 3);
-        LayoutUtils.setLoginGridSpacing(loginGrid);
+        UiUtils.setLoginGridSpacing(loginGrid);
         loginButton.setPrefWidth(75);
         usernameTextField.setPrefWidth(200);
 
@@ -44,12 +45,14 @@ public class LoginScene{
     private void addActions() {
         loginButton.setOnAction(actionEvent -> {
             int serverPort = Integer.parseInt(portTextField.getText());
-            try {
-                new Client(ipAddressTextField.getText(), serverPort, usernameTextField.getText());
-            }catch (IOException e) {
-                //TODO: alert the error to user
-            }
+            String serverIp = ipAddressTextField.getText(); //TODO: validate ip with regex
+            String username = usernameTextField.getText();
 
+            try {
+                new Client(serverIp, serverPort, username);
+            }catch (IOException e) {
+                UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
+            }
         });
     }
 

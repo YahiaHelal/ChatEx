@@ -11,13 +11,8 @@ public class MainApplication extends Application {
     @Override
     public void start(Stage stage){
         LoginScene loginScene =  new LoginScene();
-        ChatScene chatScene = new ChatScene();
         stage.setScene(loginScene.getScene());
-
-        Button loginButton = loginScene.getLoginButton();
-        loginButton.setOnAction(actionEvent -> {
-            stage.setScene(chatScene.getScene());
-        });
+        ChatScene chatScene = new ChatScene();
         stage.setTitle("Chat!");
         stage.show();
     }

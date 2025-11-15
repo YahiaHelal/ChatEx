@@ -1,16 +1,2 @@
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.server.Server run
+Nov 15, 2025 5:54:24 AM com.yahia.anotherchatapplicatoin.server.Server run
 INFO: Server running on 0.0.0.0:8080
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.client.Client initMessengers
-INFO: Messengers initialized
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.client.Client initMessengers
-INFO: Messengers initialized
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.client.Client initMessengers
-INFO: Messengers initialized
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler run
-INFO: Server received a message: [El mo7a abo tez magro7a]: يتم احبنة from 192.168.1.3
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
-Nov 12, 2025 11:07:54 PM com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler sendMessage
-INFO: Message delivered to client 192.168.1.3 successfully
