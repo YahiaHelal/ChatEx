@@ -1,5 +1,6 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
+import com.yahia.anotherchatapplicatoin.client.Client;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -16,7 +17,6 @@ public class ChatScene {
     private TextField messageTextField;
     private HBox bottomBar;
     private final int WIDTH = 880, HEIGHT = 550;
-
 
     public ChatScene() {
         initControls();
@@ -55,6 +55,7 @@ public class ChatScene {
     }
 
     private void addActions() {
+        //TODO: associate send button with send message with sockets
         sendButton.setOnAction(actionEvent -> {
             if(getInput().isEmpty()) return;
             displayMessage(getInput());
@@ -62,6 +63,8 @@ public class ChatScene {
         });
     }
 
+
+    //TODO: re-write this function to be handled with the ServerClientHandler, it's not the scene's job
     private void displayMessage(String message) {
         chatTextArea.appendText(message + "\n");
     }

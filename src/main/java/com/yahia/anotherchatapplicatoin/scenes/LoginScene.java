@@ -44,15 +44,14 @@ public class LoginScene{
         usernameTextField.setPrefWidth(200);
 
     }
+    //TODO: handle scene switching from main, scenes shouldn't be depending on one another in some way
     private void addActions(Stage stage) {
         loginButton.setOnAction(actionEvent -> {
-            int serverPort = Integer.parseInt(portTextField.getText());
-            String serverIp = ipAddressTextField.getText(); //TODO: validate ip with regex
-            String username = usernameTextField.getText();
+            //TODO: validate ip with regex
             try {
-                new Client(serverIp, serverPort, username);
+                new Client(ipAddressTextField.getText(), Integer.parseInt(portTextField.getText()), usernameTextField.getText());
                 stage.setScene(new ChatScene().getScene());
-            }catch (IOException e) {
+            }catch (Exception e) {
                 UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
             }
         });
