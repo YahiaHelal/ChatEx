@@ -2,7 +2,9 @@ package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -21,6 +23,8 @@ public class Server {
     private ServerSocket serverSocket;
 
 
+    //TODO: new server fetches the sent messages from db when initialized
+    //TODO: each server serves the chat scene when logged in
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
         CLIENTS = ConcurrentHashMap.newKeySet();

@@ -17,6 +17,7 @@ public class ServerClientHandler implements Runnable {
     private final Server CHAT_SERVER; // TODO: client can move from one server to another
     private final PrintWriter out;
 
+    //TODO: server fetches old messages from a NoSql db, somehow
     public ServerClientHandler(Socket clientSocket, Server chatServer) throws IOException {
         this.CLIENT_SOCKET = clientSocket;
         this.CHAT_SERVER = chatServer;

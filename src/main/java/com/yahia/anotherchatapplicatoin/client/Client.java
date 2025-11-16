@@ -14,6 +14,7 @@ public class Client {
     private Socket clientSocket;
     private String clientName;
 
+    //TODO: client fetches the server's old messages when connected
     public Client(String serverIp, int serverPort, String clientName) throws IOException {
         this.clientName = clientName;
         connect(serverIp, serverPort);
@@ -21,7 +22,6 @@ public class Client {
 
     }
 
-    //TODO: mark a word to end sending a message
     public void sendMessage(String message) {
         out.println(prefixMessage(message));
     }

@@ -1,2 +1,10 @@
 Nov 15, 2025 5:54:24 AM com.yahia.anotherchatapplicatoin.server.Server run
 INFO: Server running on 0.0.0.0:8080
+Nov 15, 2025 10:05:19 PM com.yahia.anotherchatapplicatoin.server.Server run
+INFO: Server running on 0.0.0.0:8080
+Nov 16, 2025 2:57:12 AM com.yahia.anotherchatapplicatoin.server.Server run
+INFO: Server running on 0.0.0.0:8080
+Nov 16, 2025 2:58:01 AM com.yahia.anotherchatapplicatoin.server.Server run
+INFO: Server running on 0.0.0.0:8080
+Nov 16, 2025 2:58:17 AM com.yahia.anotherchatapplicatoin.client.Client initMessengers
+INFO: Messengers initialized

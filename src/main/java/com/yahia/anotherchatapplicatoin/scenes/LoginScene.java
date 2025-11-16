@@ -7,6 +7,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 
@@ -18,6 +19,7 @@ public class LoginScene{
     private GridPane loginGrid;
     private Scene loginScene;
     private final int WIDTH = 600, HEIGHT = 400;
+    private final Stage mainStage;
 
     private void initControls() {
         usernameTextField = new TextField();
@@ -42,23 +44,24 @@ public class LoginScene{
         usernameTextField.setPrefWidth(200);
 
     }
-    private void addActions() {
+    private void addActions(Stage stage) {
         loginButton.setOnAction(actionEvent -> {
             int serverPort = Integer.parseInt(portTextField.getText());
             String serverIp = ipAddressTextField.getText(); //TODO: validate ip with regex
             String username = usernameTextField.getText();
-
             try {
                 new Client(serverIp, serverPort, username);
+                stage.setScene(new ChatScene().getScene());
             }catch (IOException e) {
                 UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
             }
         });
     }
 
-    public LoginScene() {
+    public LoginScene(Stage stage) {
+        this.mainStage = stage;
         initControls();
-        addActions();
+        addActions(stage);
         buildUi();
     }
 
