@@ -10,6 +10,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.InputMismatchException;
 
 public class LoginScene{
     private TextField usernameTextField;
@@ -19,7 +21,6 @@ public class LoginScene{
     private GridPane loginGrid;
     private Scene loginScene;
     private final int WIDTH = 600, HEIGHT = 400;
-    private final Stage mainStage;
 
     private void initControls() {
         usernameTextField = new TextField();
@@ -44,23 +45,19 @@ public class LoginScene{
         usernameTextField.setPrefWidth(200);
 
     }
-    //TODO: handle scene switching from main, scenes shouldn't be depending on one another in some way
-    private void addActions(Stage stage) {
-        loginButton.setOnAction(actionEvent -> {
-            //TODO: validate ip with regex
-            try {
-                new Client(ipAddressTextField.getText(), Integer.parseInt(portTextField.getText()), usernameTextField.getText());
-                stage.setScene(new ChatScene().getScene());
-            }catch (Exception e) {
-                UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
-            }
-        });
+
+    public String getIpAddressText() {
+        return ipAddressTextField.getText();
+    }
+    public int getPortField() throws InputMismatchException{
+        return Integer.parseInt(portTextField.getText());
+    }
+    public String getUserNameField() {
+        return usernameTextField.getText();
     }
 
-    public LoginScene(Stage stage) {
-        this.mainStage = stage;
+    public LoginScene() {
         initControls();
-        addActions(stage);
         buildUi();
     }
 

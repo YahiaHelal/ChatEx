@@ -1,9 +1,13 @@
 package com.yahia.anotherchatapplicatoin.client;
 
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
+import javafx.scene.control.Alert;
 
+import javax.management.OperationsException;
 import java.io.*;
 import java.net.Socket;
+import java.util.InputMismatchException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,7 +46,7 @@ public class Client {
     }
 
 
-    private void connect(String serverIp, int serverPort) throws IOException{
+    private void connect(String serverIp, int serverPort) throws IOException {
         clientSocket = new Socket(serverIp, serverPort);
     }
 

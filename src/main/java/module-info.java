@@ -4,6 +4,7 @@ module org.example.anotherchatapplicatoin {
     requires java.desktop;
     requires jdk.jshell;
     requires java.logging;
+    requires java.management;
 
 
     opens com.yahia.anotherchatapplicatoin.app to javafx.fxml;
