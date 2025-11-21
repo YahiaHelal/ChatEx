@@ -1,5 +1,6 @@
 package com.yahia.anotherchatapplicatoin.client;
 
+import com.yahia.anotherchatapplicatoin.client.lisitener.MessageListener;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.control.Alert;
@@ -17,13 +18,18 @@ public class Client {
     private PrintWriter out;
     private Socket clientSocket;
     private String clientName;
+    private MessageListener listener;
+
+    public void setMessageListener(MessageListener listener) {
+        this.listener = listener;
+    }
 
     //TODO: client fetches the server's old messages when connected
     public Client(String serverIp, int serverPort, String clientName) throws IOException {
         this.clientName = clientName;
         connect(serverIp, serverPort);
         initMessengers();
-
+        startListener();
     }
 
     public void sendMessage(String message) {
@@ -55,6 +61,9 @@ public class Client {
     }
 
 
+    private void startListener() {
+        new Thread(this::listen).start();
+    }
 
 
     //TODO: receive messages in a new thread, multiple servers may try to write at the same time
@@ -62,7 +71,9 @@ public class Client {
         String text = "", msg;
         try {
             while((msg = in.readLine()) != null) {
-                text = text.concat(msg);
+                if(listener != null) {
+                    listener.onMessage(msg);
+                }
             }
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while collecting server message");

@@ -18,6 +18,7 @@ public class ChatScene {
     private HBox bottomBar;
     private final int WIDTH = 880, HEIGHT = 550;
 
+
     public ChatScene() {
         initControls();
         applyConstraints();
@@ -73,6 +74,11 @@ public class ChatScene {
     }
     private String getInput() {
         return messageTextField.getText();
+    }
+
+    //TODO: sets the message listener function for the client, check Platform.runLater()
+    private void listenToUpdates() {
+
     }
 
 }
