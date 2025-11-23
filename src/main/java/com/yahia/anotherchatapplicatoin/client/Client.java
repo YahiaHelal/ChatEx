@@ -1,14 +1,10 @@
 package com.yahia.anotherchatapplicatoin.client;
 
 import com.yahia.anotherchatapplicatoin.client.lisitener.MessageListener;
+import com.yahia.anotherchatapplicatoin.controllers.ChatSceneController;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
-import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
-import javafx.scene.control.Alert;
-
-import javax.management.OperationsException;
 import java.io.*;
 import java.net.Socket;
-import java.util.InputMismatchException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -27,19 +23,23 @@ public class Client {
     //TODO: client fetches the server's old messages when connected
     public Client(String serverIp, int serverPort, String clientName) throws IOException {
         this.clientName = clientName;
+
         connect(serverIp, serverPort);
         initMessengers();
         startListener();
     }
 
     public void sendMessage(String message) {
-        out.println(prefixMessage(message));
+        out.println(message);
     }
 
     public void setClientName(String name) {
         this.clientName = name;
     }
 
+    public String getClientName() {
+        return clientName;
+    }
     private void initMessengers(){
         try {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -56,9 +56,7 @@ public class Client {
         clientSocket = new Socket(serverIp, serverPort);
     }
 
-    private String prefixMessage(String message) {
-        return String.format("[%s]: %s", clientName, message);
-    }
+
 
 
     private void startListener() {
@@ -68,7 +66,7 @@ public class Client {
 
     //TODO: receive messages in a new thread, multiple servers may try to write at the same time
     private void listen() {
-        String text = "", msg;
+        String msg;
         try {
             while((msg = in.readLine()) != null) {
                 if(listener != null) {

@@ -1,6 +1,7 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.controllers.ChatSceneController;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -24,6 +25,7 @@ public class ChatScene {
         applyConstraints();
         addActions();
         buildUi();
+        ChatSceneController controller = new ChatSceneController(chatTextArea, sendButton, messageTextField);
     }
 
     public Scene getScene() {
