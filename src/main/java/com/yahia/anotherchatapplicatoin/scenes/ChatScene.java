@@ -9,6 +9,9 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 
+import java.io.IOException;
+import java.util.logging.Logger;
+
 
 public class ChatScene {
     private TextArea chatTextArea;
@@ -20,18 +23,22 @@ public class ChatScene {
     private final int WIDTH = 880, HEIGHT = 550;
 
 
-    public ChatScene() {
+    public ChatScene(String ip, int port, String username) throws IOException{
+        initController(ip, port, username);
         initControls();
         applyConstraints();
         addActions();
         buildUi();
-        ChatSceneController controller = new ChatSceneController(chatTextArea, sendButton, messageTextField);
     }
 
     public Scene getScene() {
         return chatScene;
     }
 
+    private void initController(String ip, int port, String username) throws IOException{
+        ChatSceneController controller = new ChatSceneController(chatTextArea, sendButton, messageTextField);
+        controller.connect(ip, port, username);
+    }
     private void initControls() {
         chatTextArea = new TextArea();
         messageTextField = new TextField();
@@ -58,22 +65,13 @@ public class ChatScene {
     }
 
     private void addActions() {
-        //TODO: associate send button with send message with sockets
+
         sendButton.setOnAction(actionEvent -> {
             if(getInput().isEmpty()) return;
-            displayMessage(getInput());
-            clearInput();
+
         });
     }
 
-
-    //TODO: re-write this function to be handled with the ServerClientHandler, it's not the scene's job
-    private void displayMessage(String message) {
-        chatTextArea.appendText(message + "\n");
-    }
-    private void clearInput() {
-        messageTextField.clear();
-    }
     private String getInput() {
         return messageTextField.getText();
     }

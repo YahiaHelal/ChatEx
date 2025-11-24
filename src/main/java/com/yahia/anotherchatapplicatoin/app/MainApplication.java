@@ -22,7 +22,7 @@ public class MainApplication extends Application {
         loginScene.getLoginButton().setOnAction(actionEvent -> {
             try {
                 new Client(loginScene.getIpAddressText(), loginScene.getPortField(), loginScene.getUserNameField());
-                stage.setScene(new ChatScene().getScene());
+                stage.setScene(new ChatScene(chatServer.getServerAddress(), chatServer.getServerPort(), loginScene.getUserNameField()).getScene());
             }catch (Exception e) {
                 UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
             }

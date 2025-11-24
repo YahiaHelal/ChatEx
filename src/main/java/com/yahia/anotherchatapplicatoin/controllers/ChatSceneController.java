@@ -16,11 +16,15 @@ public class ChatSceneController {
     private final Button sendButton;
     private final TextField inputField;
 
+    //TODO: ui-backend glue should be handled using a single controller
     public ChatSceneController(TextArea chatArea, Button sendButton, TextField inputField) {
         this.chatArea = chatArea;
         this.sendButton = sendButton;
         this.inputField = inputField;
+        setUpSendButton();
     }
+
+
 
     public void connect(String serverIp, int port, String username) throws IOException {
         client = new Client(serverIp, port, username);
@@ -30,7 +34,10 @@ public class ChatSceneController {
     private void setUpSendButton() {
         sendButton.setOnAction(actionEvent -> {
             String msg = inputField.getText();
-            onMessageReceived(msg);
+            if(!msg.isBlank()) {
+                client.sendMessage(msg);
+                inputField.clear();
+            }
         });
     }
 

@@ -3,14 +3,9 @@ package com.yahia.anotherchatapplicatoin.scenes;
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.stage.Stage;
-
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.InputMismatchException;
 
 public class LoginScene{
