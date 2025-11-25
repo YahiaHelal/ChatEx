@@ -79,7 +79,6 @@ public class Server {
     }
 
 
-    //TODO: store client handlers instead of sockets, each holding it's PrintWriter
     private void listen(){
         new Thread(() -> {
             while(true) {

@@ -24,10 +24,10 @@ public class ChatScene {
 
 
     public ChatScene(String ip, int port, String username) throws IOException{
-        initController(ip, port, username);
         initControls();
         applyConstraints();
         addActions();
+        initController(ip, port, username);
         buildUi();
     }
 
@@ -66,10 +66,6 @@ public class ChatScene {
 
     private void addActions() {
 
-        sendButton.setOnAction(actionEvent -> {
-            if(getInput().isEmpty()) return;
-
-        });
     }
 
     private String getInput() {
