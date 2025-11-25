@@ -24,7 +24,7 @@ public class Server {
 
 
     //TODO: new server fetches the sent messages from db when initialized
-    //TODO: each server serves the chat scene when logged in
+    //TODO: each server deals with it's own data transfer currently
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
         CLIENTS = ConcurrentHashMap.newKeySet();
@@ -73,13 +73,12 @@ public class Server {
         CLIENTS.add(clientHandler);
     }
 
-    //TODO: client can disconnect form the server
+    //TODO: client can disconnect form the server, should rollback ui to login screen
     private void removeClient(ServerClientHandler clientHandler) {
         CLIENTS.remove(clientHandler);
     }
 
 
-    //TODO: store client handlers instead of sockets, each holding it's PrintWriter
     private void listen(){
         new Thread(() -> {
             while(true) {
