@@ -1,6 +1,5 @@
 package com.yahia.anotherchatapplicatoin.app;
 
-import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
 import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.server.Server;
@@ -13,8 +12,6 @@ public class MainApplication extends Application {
     @Override
     //TODO: re-write after setting up the controllers
     public void start(Stage stage){
-        Server chatServer = new Server(8080);
-        chatServer.start();
         LoginScene loginScene = new LoginScene();
         loginScene.getLoginButton().setOnAction(actionEvent -> {
             try {

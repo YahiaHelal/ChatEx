@@ -30,7 +30,7 @@ public class Client {
     }
 
     public void sendMessage(String message) {
-        out.println(message);
+        out.println(prefixMessage(clientName, message));
     }
 
     public void setClientName(String name) {
@@ -40,6 +40,11 @@ public class Client {
     public String getClientName() {
         return clientName;
     }
+
+    private String prefixMessage(String name, String message) {
+        return String.format("[%s]: %s", name, message);
+    }
+
     private void initMessengers(){
         try {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
