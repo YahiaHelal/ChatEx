@@ -41,12 +41,10 @@ public class ChatSceneController {
         });
     }
 
-    private String prefixMessage(String message) {
-        return String.format("[%s]: %s\n", client.getClientName(), message);
-    }
+
 
     private void onMessageReceived(String msg) {
-        Platform.runLater(() -> chatArea.appendText(prefixMessage(msg)));
+        Platform.runLater(() -> chatArea.appendText(msg + "\n"));
     }
 
 }
