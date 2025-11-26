@@ -2,6 +2,7 @@ package com.yahia.anotherchatapplicatoin.app;
 
 import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
 import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
+import com.yahia.anotherchatapplicatoin.server.Server;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.application.Application;
 import javafx.scene.control.Alert;
@@ -11,8 +12,6 @@ public class MainApplication extends Application {
     @Override
     //TODO: re-write after setting up the controllers
     public void start(Stage stage){
-//        Server chatServer = new Server(8080);
-//        chatServer.start();
         LoginScene loginScene = new LoginScene();
         loginScene.getLoginButton().setOnAction(actionEvent -> {
             try {
