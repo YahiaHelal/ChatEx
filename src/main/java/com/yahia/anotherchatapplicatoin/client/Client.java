@@ -21,7 +21,7 @@ public class Client {
     }
 
     //TODO: client fetches the server's old messages when connected
-    public Client(String serverIp, int serverPort, String clientName) throws IOException {
+    public Client(String serverIp, int serverPort, String clientName) {
         this.clientName = clientName;
 
         connect(serverIp, serverPort);
@@ -29,8 +29,12 @@ public class Client {
         startListener();
     }
 
-    public void sendMessage(String message) {
-        out.println(prefixMessage(clientName, message));
+    public void sendMessage(String message, boolean firstConnection) {
+        if(firstConnection) {
+            out.println(prefixMessage("SERVER", message));
+        }else {
+            out.println(prefixMessage(clientName, message));
+        }
     }
 
     public void setClientName(String name) {
@@ -41,6 +45,9 @@ public class Client {
         return clientName;
     }
 
+
+    //TODO: replace this goofy aah message with binary protocol or JSON packets
+    //TODO: Message Struct
     private String prefixMessage(String name, String message) {
         return String.format("[%s]: %s", name, message);
     }
@@ -57,8 +64,12 @@ public class Client {
     }
 
 
-    private void connect(String serverIp, int serverPort) throws IOException {
-        clientSocket = new Socket(serverIp, serverPort);
+    private void connect(String serverIp, int serverPort)  {
+        try {
+            clientSocket = new Socket(serverIp, serverPort);
+        }catch(IOException e) {
+            LOGGER.log(Level.SEVERE, "Couldn't initiate socket to the Server");
+        }
     }
 
 
