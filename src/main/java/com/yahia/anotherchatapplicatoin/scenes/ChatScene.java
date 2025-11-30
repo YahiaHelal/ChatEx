@@ -23,7 +23,7 @@ public class ChatScene {
     private final int WIDTH = 880, HEIGHT = 550;
 
 
-    public ChatScene(String ip, int port, String username) throws IOException{
+    public ChatScene(String ip, int port, String username){
         initControls();
         applyConstraints();
         addActions();
@@ -35,7 +35,7 @@ public class ChatScene {
         return chatScene;
     }
 
-    private void initController(String ip, int port, String username) throws IOException{
+    private void initController(String ip, int port, String username){
         ChatSceneController controller = new ChatSceneController(chatTextArea, sendButton, messageTextField);
         controller.connect(ip, port, username);
     }

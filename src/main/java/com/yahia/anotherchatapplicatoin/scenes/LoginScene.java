@@ -51,14 +51,14 @@ public class LoginScene{
         usernameTextField.setPrefWidth(200);
 
     }
-    public String getIpAddressText() {
+    public String getIpAddress() {
         return ipAddressTextField.getText();
     }
-    public int getPortField() throws InputMismatchException{
+    public int getPort() throws NumberFormatException{
         return Integer.parseInt(portTextField.getText());
     }
 
-    public String getUserNameField() {
+    public String getUsername() {
         return usernameTextField.getText();
     }
 

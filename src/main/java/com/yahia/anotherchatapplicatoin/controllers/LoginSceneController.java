@@ -19,8 +19,14 @@ public class LoginSceneController {
     private void setUpLoginButton(Stage stage) {
         loginScene.getLoginButton().setOnAction(actionEvent -> {
             try {
-                stage.setScene(new ChatScene(loginScene.getIpAddressText(), loginScene.getPortField(), loginScene.getUserNameField()).getScene());
-            }catch (IOException e) {
+                stage.setScene(
+                        new ChatScene(
+                                loginScene.getIpAddress(),
+                                loginScene.getPort(),
+                                loginScene.getUsername()
+                        ).getScene()
+                );
+            }catch (NumberFormatException e) {
                 UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
             }
         });
