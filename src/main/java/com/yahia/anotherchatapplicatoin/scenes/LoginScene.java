@@ -1,11 +1,14 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.controllers.LoginSceneController;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+
 import java.util.InputMismatchException;
 
 public class LoginScene{
@@ -16,6 +19,12 @@ public class LoginScene{
     private GridPane loginGrid;
     private Scene loginScene;
     private final int WIDTH = 600, HEIGHT = 400;
+    private LoginSceneController controller;
+    public LoginScene(Stage stage) {
+        initControls();
+        buildUi();
+        initController(stage);
+    }
 
     private void initControls() {
         usernameTextField = new TextField();
@@ -29,7 +38,9 @@ public class LoginScene{
         portTextField.setPromptText("Port");
 
     }
-
+    private void initController(Stage stage) {
+        controller = new LoginSceneController(this, stage);
+    }
     private void buildUi() {
         loginGrid.add(usernameTextField, 0, 0);
         loginGrid.add(ipAddressTextField, 0, 1);
@@ -40,20 +51,15 @@ public class LoginScene{
         usernameTextField.setPrefWidth(200);
 
     }
-
     public String getIpAddressText() {
         return ipAddressTextField.getText();
     }
     public int getPortField() throws InputMismatchException{
         return Integer.parseInt(portTextField.getText());
     }
+
     public String getUserNameField() {
         return usernameTextField.getText();
-    }
-
-    public LoginScene() {
-        initControls();
-        buildUi();
     }
 
     public Scene getScene() {

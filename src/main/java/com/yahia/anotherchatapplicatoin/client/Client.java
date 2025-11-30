@@ -41,6 +41,9 @@ public class Client {
         return clientName;
     }
 
+
+    //TODO: replace this goofy aah message with binary protocol or JSON packets
+    //TODO: Message Struct
     private String prefixMessage(String name, String message) {
         return String.format("[%s]: %s", name, message);
     }
