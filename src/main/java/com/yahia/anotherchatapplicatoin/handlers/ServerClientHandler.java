@@ -29,6 +29,7 @@ public class ServerClientHandler implements Runnable {
         out.println(msg);
         LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", CLIENT_SOCKET.getInetAddress().getHostAddress()));
     }
+
     @Override
     public void run() {
         try {

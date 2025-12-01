@@ -23,11 +23,10 @@ public class ChatScene {
     private final int WIDTH = 880, HEIGHT = 550;
 
 
-    public ChatScene(String ip, int port, String username){
+    public ChatScene(String ip, int port, String username, Client client){
         initControls();
         applyConstraints();
-        addActions();
-        initController(ip, port, username);
+        initController(ip, port, username, client);
         buildUi();
     }
 
@@ -35,9 +34,8 @@ public class ChatScene {
         return chatScene;
     }
 
-    private void initController(String ip, int port, String username){
-        ChatSceneController controller = new ChatSceneController(chatTextArea, sendButton, messageTextField);
-        controller.connect(ip, port, username);
+    private void initController(String ip, int port, String username, Client client){
+        new ChatSceneController(chatTextArea, sendButton, messageTextField, client);
     }
     private void initControls() {
         chatTextArea = new TextArea();
@@ -62,10 +60,6 @@ public class ChatScene {
         bottomBar.setPadding(new Insets(10));
         sendButton.setPrefWidth(100);
         HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
-    }
-
-    private void addActions() {
-
     }
 
     private String getInput() {

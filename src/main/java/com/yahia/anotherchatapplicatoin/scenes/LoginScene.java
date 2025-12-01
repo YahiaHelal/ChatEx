@@ -2,6 +2,7 @@ package com.yahia.anotherchatapplicatoin.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.controllers.LoginSceneController;
+import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -10,6 +11,8 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 import java.util.InputMismatchException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LoginScene{
     private TextField usernameTextField;
