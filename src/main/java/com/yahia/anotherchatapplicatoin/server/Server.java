@@ -19,6 +19,7 @@ public class Server {
 
     private final int SERVER_PORT;
     private final Set<ServerClientHandler> CLIENTS;
+    private final Set<String> CLIENT_NAMES;
     private final Logger LOGGER;
     private ServerSocket serverSocket;
 
@@ -28,6 +29,7 @@ public class Server {
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
         CLIENTS = ConcurrentHashMap.newKeySet();
+        CLIENT_NAMES = ConcurrentHashMap.newKeySet();
         LOGGER = LogManager.getLogger();
     }
 

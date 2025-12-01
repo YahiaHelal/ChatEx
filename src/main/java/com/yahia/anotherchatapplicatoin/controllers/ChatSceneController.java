@@ -17,22 +17,22 @@ public class ChatSceneController {
     private final Button sendButton;
     private final TextField inputField;
     private static final Logger LOGGER = LogManager.getLogger();
+
     //TODO: ui-backend glue should be handled using a single controller
-    public ChatSceneController(TextArea chatArea, Button sendButton, TextField inputField) {
+    public ChatSceneController(TextArea chatArea, Button sendButton, TextField inputField, Client client) {
         this.chatArea = chatArea;
         this.sendButton = sendButton;
         this.inputField = inputField;
+        this.client = client;
+        initializeListener();
         setUpSendButton();
     }
 
 
-
-    public void connect(String serverIp, int port, String username) {
-        client = new Client(serverIp, port, username);
+    private void initializeListener() {
         client.setMessageListener(this::onMessageReceived);
-        client.sendMessage(String.format("%s Has Joined The Chat Room, Greet the hell out of em", username), true);
+        client.sendMessage(String.format("%s Has Joined The Chat Room, Greet the hell out of em", client.getClientName()), true);
     }
-
     private void setUpSendButton() {
         sendButton.setOnAction(actionEvent -> {
             String msg = inputField.getText();
@@ -43,9 +43,7 @@ public class ChatSceneController {
         });
     }
 
-
-
-    private void onMessageReceived(String msg) {
+    public void onMessageReceived(String msg) {
         Platform.runLater(() -> chatArea.appendText(msg + "\n"));
     }
 
