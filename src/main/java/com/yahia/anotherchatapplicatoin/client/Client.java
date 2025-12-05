@@ -1,8 +1,9 @@
 package com.yahia.anotherchatapplicatoin.client;
 
 import com.yahia.anotherchatapplicatoin.client.lisitener.MessageListener;
-import com.yahia.anotherchatapplicatoin.controllers.ChatSceneController;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.protocol.ConnectionStatus;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -21,20 +22,42 @@ public class Client {
     }
 
     //TODO: client fetches the server's old messages when connected
-    public Client(String serverIp, int serverPort, String clientName) {
+    public Client(String clientName) {
         this.clientName = clientName;
+    }
 
+    public static ConnectionStatus handShake(String serverIp, int port, String username) {
+        try(Socket temp = new Socket(serverIp, port)) {
+            PrintWriter out = new PrintWriter(temp.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(temp.getInputStream()));
+
+            out.println(username);
+            String response = in.readLine();
+            return ConnectionStatus.valueOf(response);
+
+        }catch (Exception e) {
+            return ConnectionStatus.REJECT_IO;
+        }
+    }
+
+    public void connectAndStart(String serverIp, int serverPort) {
         connect(serverIp, serverPort);
         initMessengers();
+        sendUsername(clientName);
         startListener();
     }
 
+    //TODO: server-client protocol: client name first, then messages follow
     public void sendMessage(String message, boolean firstConnection) {
         if(firstConnection) {
             out.println(prefixMessage("SERVER", message));
         }else {
             out.println(prefixMessage(clientName, message));
         }
+    }
+
+    public void sendUsername(String name) {
+        out.println(name);
     }
 
     public void setClientName(String name) {
@@ -45,6 +68,13 @@ public class Client {
         return clientName;
     }
 
+    public void closeClientSocket() {
+        try {
+            clientSocket.close();
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Couldn't close client socket");
+        }
+    }
 
     //TODO: replace this goofy aah message with binary protocol or JSON packets
     //TODO: Message Struct
@@ -79,8 +109,6 @@ public class Client {
         new Thread(this::listen).start();
     }
 
-
-    //TODO: receive messages in a new thread, multiple servers may try to write at the same time
     private void listen() {
         String msg;
         try {

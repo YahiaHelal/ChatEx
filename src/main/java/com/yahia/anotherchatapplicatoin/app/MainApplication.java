@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 
 public class MainApplication extends Application {
     @Override
-    //TODO: re-write after setting up the controllers
+
     public void start(Stage stage){
         LoginScene loginScene = new LoginScene(stage);
         stage.setScene(loginScene.getScene());

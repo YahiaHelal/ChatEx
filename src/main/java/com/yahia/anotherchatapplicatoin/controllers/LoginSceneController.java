@@ -2,11 +2,13 @@ package com.yahia.anotherchatapplicatoin.controllers;
 
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.protocol.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
 import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+
 
 public class LoginSceneController {
     private final LoginScene loginScene;
@@ -16,13 +18,19 @@ public class LoginSceneController {
        this.loginScene = loginScene;
        setUpLoginButton(stage);
     }
-    private void connect(String serverIp, int port, String username) {
-        client = new Client(serverIp, port, username);
-    }
+
     private void setUpLoginButton(Stage stage) {
         loginScene.getLoginButton().setOnAction(actionEvent -> {
-            try {
-                connect(loginScene.getIpAddress(), loginScene.getPort(), loginScene.getUsername());
+
+            ConnectionStatus status = Client.handShake(loginScene.getIpAddress(), loginScene.getPort(), loginScene.getUsername());
+
+            if (status == ConnectionStatus.ACCEPT) {
+                client = new Client(loginScene.getUsername());
+                client.connectAndStart(loginScene.getIpAddress(), loginScene.getPort());
+                UiUtils.createAlert(Alert.AlertType.INFORMATION,
+                        "Logged in!",
+                        status.message()).showAndWait();
+
                 stage.setScene(
                         new ChatScene(
                                 loginScene.getIpAddress(),
@@ -31,9 +39,15 @@ public class LoginSceneController {
                                 client
                         ).getScene()
                 );
-            }catch (NumberFormatException e) {
-                UiUtils.createAlert(Alert.AlertType.ERROR, "no server with that ip is currently running", "Failed to connect to server").showAndWait();
+            } else {
+                UiUtils.createAlert(
+                        Alert.AlertType.WARNING,
+                        "Login Failed",
+                        status.message()
+                ).showAndWait();
             }
+
+
         });
     }
 

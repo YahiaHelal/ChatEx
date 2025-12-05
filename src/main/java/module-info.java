@@ -23,4 +23,6 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.anotherchatapplicatoin.utils.backend;
     opens com.yahia.anotherchatapplicatoin.client.lisitener to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.client.lisitener;
+    exports com.yahia.anotherchatapplicatoin.protocol;
+    opens com.yahia.anotherchatapplicatoin.protocol to javafx.fxml;
 }

@@ -41,6 +41,8 @@ public class ServerClientHandler implements Runnable {
             }
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't receive client message");
+        }finally {
+            CHAT_SERVER.removeClient(this);
         }
     }
 }
