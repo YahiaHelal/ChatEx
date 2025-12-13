@@ -2,7 +2,7 @@ package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
-import com.yahia.anotherchatapplicatoin.protocol.ConnectionStatus;
+import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
@@ -31,6 +31,7 @@ public class Server {
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
+    //TODO: system-wise responsibility
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
         CLIENTS = ConcurrentHashMap.newKeySet();
@@ -53,31 +54,21 @@ public class Server {
     public int getServerPort() {
         return SERVER_PORT;
     }
-
-
     public void sendMessage(Socket clientSocket, String message) {
         try {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             out.println(message);
-
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
         }
 
     }
-    public void broadCastMessage(String message) {
+
+    public void broadCastPacket(CommunicationPacket packet) {
+        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
         for(ServerClientHandler clientHandler: CLIENTS) {
-            clientHandler.sendMessage(message);
+            clientHandler.sendMessageToClient(broadCastMessage);
         }
-    }
-
-
-    private void run() throws IOException {
-        serverSocket = new ServerSocket(SERVER_PORT);
-        LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
-    }
-    private void addClient(ServerClientHandler clientHandler) {
-        CLIENTS.add(clientHandler);
     }
 
     //TODO: client can disconnect form the server, should rollback ui to login screen
@@ -87,7 +78,19 @@ public class Server {
     }
 
 
-    //BUG: handshake adds the username before the actual connection
+    private void run() throws IOException {
+        serverSocket = new ServerSocket(SERVER_PORT);
+        LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
+    }
+
+    private ConnectionStatus handleHandShake(CommunicationPacket packet) {
+        LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
+        HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(packet.payload(), HandShakeRequest.class);
+        CLIENT_NAMES.add(handShakeRequest.username());
+        return CLIENT_NAMES.contains(handShakeRequest.username()) ? ConnectionStatus.REJECT_USERNAME_TAKEN : ConnectionStatus.ACCEPT;
+    }
+
+
     private void listen(){
         new Thread(() -> {
             while(true) {
@@ -96,26 +99,24 @@ public class Server {
                     BufferedReader tempIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                     PrintWriter tempOut = new PrintWriter(clientSocket.getOutputStream(), true);
 
-                    String clientName = tempIn.readLine();
-                    if(clientName == null || clientName.isBlank()) {
-                        tempOut.println(ConnectionStatus.REJECT_INVALID_USERNAME.name());
-                        clientSocket.close();
-                        continue;
+                    // receives the Header first
+                    CommunicationPacket clientSentPacket =  JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
+                    switch(clientSentPacket.type()) {
+                        case HANDSHAKE_REQUEST -> {
+                            ConnectionStatus handShakeConnectionStatus = handleHandShake(clientSentPacket);
+                            CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, JsonHelper.GSON.toJson(new HandShakeResponse(handShakeConnectionStatus)));
+
+                            tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
+
+                            if(handShakeConnectionStatus == ConnectionStatus.ACCEPT) {
+                                ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
+                                LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+                                CLIENTS.add(clientHandler);
+                                new Thread(clientHandler).start();
+                            }
+                        }
+
                     }
-                    if(CLIENT_NAMES.contains(clientName)) {
-                        tempOut.println(ConnectionStatus.REJECT_USERNAME_TAKEN.name());
-                        clientSocket.close();
-                        continue;
-                    }
-
-                    tempOut.println(ConnectionStatus.ACCEPT.name());
-                    CLIENT_NAMES.add(clientName);
-
-                    ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
-                    addClient(clientHandler);
-
-                    LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-                    new Thread(clientHandler).start();
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
                 }

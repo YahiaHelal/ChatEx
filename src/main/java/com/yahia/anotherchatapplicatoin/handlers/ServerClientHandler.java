@@ -1,6 +1,8 @@
 package com.yahia.anotherchatapplicatoin.handlers;
 
+import com.google.gson.Gson;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.server.Server;
 
 import java.io.BufferedReader;
@@ -17,7 +19,7 @@ public class ServerClientHandler implements Runnable {
     private final Server CHAT_SERVER; // TODO: client can move from one server to another
     private final PrintWriter out;
 
-    //TODO: server fetches old messages from a NoSql db, somehow
+    //NOTE: only fired when a new client is authenticated by the HandShake
     public ServerClientHandler(Socket clientSocket, Server chatServer) throws IOException {
         this.CLIENT_SOCKET = clientSocket;
         this.CHAT_SERVER = chatServer;
@@ -25,9 +27,19 @@ public class ServerClientHandler implements Runnable {
         out = new PrintWriter(clientSocket.getOutputStream(), true);
     }
 
-    public void sendMessage(String msg) {
-        out.println(msg);
+    public void sendMessageToClient(BroadCastMessage message) {
+        out.println(prefixMessage(message.sender(), message.text()));
         LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", CLIENT_SOCKET.getInetAddress().getHostAddress()));
+    }
+
+    private String prefixMessage(String clientName, String text) {
+        return String.format("[%s]: %s", clientName, text);
+    }
+    private void handleBroadCast(CommunicationPacket packet){
+        CHAT_SERVER.broadCastPacket(packet);
+    };
+    private void handlePrivateMessage(CommunicationPacket packet) {
+
     }
 
     @Override
@@ -37,7 +49,11 @@ public class ServerClientHandler implements Runnable {
             String msg;
             while((msg = in.readLine()) != null) {
                 LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, CLIENT_SOCKET.getInetAddress().getHostAddress()));
-                CHAT_SERVER.broadCastMessage(msg);
+                CommunicationPacket clientPacket =  JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
+                switch (clientPacket.type()) {
+                    case BROADCAST_MESSAGE -> handleBroadCast(clientPacket);
+                    case PRIVATE_MESSAGE -> handlePrivateMessage(clientPacket);
+                }
             }
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't receive client message");
@@ -45,4 +61,6 @@ public class ServerClientHandler implements Runnable {
             CHAT_SERVER.removeClient(this);
         }
     }
+
+
 }

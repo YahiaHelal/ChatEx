@@ -1,8 +1,9 @@
 package com.yahia.anotherchatapplicatoin.client;
 
-import com.yahia.anotherchatapplicatoin.client.lisitener.MessageListener;
+import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
+import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
-import com.yahia.anotherchatapplicatoin.protocol.ConnectionStatus;
+import com.yahia.anotherchatapplicatoin.protocol.*;
 
 import java.io.*;
 import java.net.Socket;
@@ -15,50 +16,29 @@ public class Client {
     private PrintWriter out;
     private Socket clientSocket;
     private String clientName;
-    private MessageListener listener;
+    private MessageListener messageListener;
+    private HandShakeListener handShakeListener;
 
-    public void setMessageListener(MessageListener listener) {
-        this.listener = listener;
+    public void setMessageListener(MessageListener messageListener) {
+        this.messageListener = messageListener;
+    }
+    public void setHandShakeListener(HandShakeListener handShakeListener) {
+        this.handShakeListener = handShakeListener;
     }
 
     //TODO: client fetches the server's old messages when connected
-    public Client(String clientName) {
+    public Client(String clientName, String serverIp, int serverPort) {
         this.clientName = clientName;
-    }
-
-    public static ConnectionStatus handShake(String serverIp, int port, String username) {
-        try(Socket temp = new Socket(serverIp, port)) {
-            PrintWriter out = new PrintWriter(temp.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(temp.getInputStream()));
-
-            out.println(username);
-            String response = in.readLine();
-            return ConnectionStatus.valueOf(response);
-
-        }catch (Exception e) {
-            return ConnectionStatus.REJECT_IO;
-        }
-    }
-
-    public void connectAndStart(String serverIp, int serverPort) {
         connect(serverIp, serverPort);
         initMessengers();
-        sendUsername(clientName);
         startListener();
     }
 
     //TODO: server-client protocol: client name first, then messages follow
-    public void sendMessage(String message, boolean firstConnection) {
-        if(firstConnection) {
-            out.println(prefixMessage("SERVER", message));
-        }else {
-            out.println(prefixMessage(clientName, message));
-        }
+    public void sendMessage(String message) {
+        out.println(message);
     }
 
-    public void sendUsername(String name) {
-        out.println(name);
-    }
 
     public void setClientName(String name) {
         this.clientName = name;
@@ -70,6 +50,7 @@ public class Client {
 
     public void closeClientSocket() {
         try {
+            LOGGER.log(Level.INFO, "Closing client socket");
             clientSocket.close();
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Couldn't close client socket");
@@ -78,7 +59,7 @@ public class Client {
 
     //TODO: replace this goofy aah message with binary protocol or JSON packets
     //TODO: Message Struct
-    private String prefixMessage(String name, String message) {
+    private String prefixName(String name, String message) {
         return String.format("[%s]: %s", name, message);
     }
 
@@ -102,8 +83,30 @@ public class Client {
         }
     }
 
+    private void handleHandShakeResponse(CommunicationPacket packet) {
+        HandShakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandShakeResponse.class);
+        if(handShakeResponse.status() != ConnectionStatus.ACCEPT) {
+            closeClientSocket();
+        }
+        notifyHandShakeListener(handShakeResponse.status());
+    }
 
+    private void notifyHandShakeListener(ConnectionStatus status) {
+        if(handShakeListener != null) {
+            handShakeListener.onHandShake(status);
+        }
+    }
 
+    private void notifyMessageListener(BroadCastMessage message) {
+        if(messageListener != null) {
+            messageListener.onMessage(prefixName(message.sender(), message.text()));
+        }
+    }
+
+    private void handleBroadCastMessage(CommunicationPacket packet) {
+        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
+        notifyMessageListener(broadCastMessage);
+    }
 
     private void startListener() {
         new Thread(this::listen).start();
@@ -113,8 +116,10 @@ public class Client {
         String msg;
         try {
             while((msg = in.readLine()) != null) {
-                if(listener != null) {
-                    listener.onMessage(msg);
+                CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
+                switch (serverSentPacket.type()) {
+                    case HANDSHAKE_RESPONSE -> handleHandShakeResponse(serverSentPacket);
+                    case BROADCAST_MESSAGE -> handleBroadCastMessage(serverSentPacket);
                 }
             }
         }catch (IOException e) {
