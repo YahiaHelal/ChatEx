@@ -3,6 +3,7 @@ package com.yahia.anotherchatapplicatoin.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.protocol.*;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeRequest;
 import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
 import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;

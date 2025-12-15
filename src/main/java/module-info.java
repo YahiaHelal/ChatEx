@@ -26,4 +26,10 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.anotherchatapplicatoin.client.listeners;
     exports com.yahia.anotherchatapplicatoin.protocol;
     opens com.yahia.anotherchatapplicatoin.protocol to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.message;
+    opens com.yahia.anotherchatapplicatoin.protocol.message to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.handshake;
+    opens com.yahia.anotherchatapplicatoin.protocol.handshake to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.disconnect;
+    opens com.yahia.anotherchatapplicatoin.protocol.disconnect to javafx.fxml;
 }

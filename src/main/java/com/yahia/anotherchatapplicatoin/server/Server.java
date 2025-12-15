@@ -3,11 +3,10 @@ package com.yahia.anotherchatapplicatoin.server;
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeRequest;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
 import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
-import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
-import javafx.scene.control.Alert;
-import javafx.stage.Stage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -65,9 +64,8 @@ public class Server {
     }
 
     public void broadCastPacket(CommunicationPacket packet) {
-        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
         for(ServerClientHandler clientHandler: CLIENTS) {
-            clientHandler.sendMessageToClient(broadCastMessage);
+            clientHandler.sendMessageToClient(packet);
         }
     }
 
@@ -86,8 +84,11 @@ public class Server {
     private ConnectionStatus handleHandShake(CommunicationPacket packet) {
         LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
         HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(packet.payload(), HandShakeRequest.class);
+        if(CLIENT_NAMES.contains(handShakeRequest.username())) {
+            return ConnectionStatus.REJECT_USERNAME_TAKEN;
+        }
         CLIENT_NAMES.add(handShakeRequest.username());
-        return CLIENT_NAMES.contains(handShakeRequest.username()) ? ConnectionStatus.REJECT_USERNAME_TAKEN : ConnectionStatus.ACCEPT;
+        return ConnectionStatus.ACCEPT;
     }
 
 
@@ -100,7 +101,7 @@ public class Server {
                     PrintWriter tempOut = new PrintWriter(clientSocket.getOutputStream(), true);
 
                     // receives the Header first
-                    CommunicationPacket clientSentPacket =  JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
+                    CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
                     switch(clientSentPacket.type()) {
                         case HANDSHAKE_REQUEST -> {
                             ConnectionStatus handShakeConnectionStatus = handleHandShake(clientSentPacket);
@@ -110,10 +111,13 @@ public class Server {
 
                             if(handShakeConnectionStatus == ConnectionStatus.ACCEPT) {
                                 ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
-                                LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
                                 CLIENTS.add(clientHandler);
+                                LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
                                 new Thread(clientHandler).start();
                             }
+                        }
+                        default -> {
+                            LOGGER.log(Level.SEVERE, "UNKNOWN HEADER");
                         }
 
                     }

@@ -4,6 +4,9 @@ import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
+import com.yahia.anotherchatapplicatoin.protocol.message.Message;
 
 import java.io.*;
 import java.net.Socket;
@@ -116,14 +119,16 @@ public class Client {
         String msg;
         try {
             while((msg = in.readLine()) != null) {
+                LOGGER.log(Level.INFO, String.format("Message sent to client : %s", msg));
                 CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
+                //TODO: apply OCP later
                 switch (serverSentPacket.type()) {
                     case HANDSHAKE_RESPONSE -> handleHandShakeResponse(serverSentPacket);
                     case BROADCAST_MESSAGE -> handleBroadCastMessage(serverSentPacket);
                 }
             }
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error while collecting server message");
+            LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
         }
     }
 }

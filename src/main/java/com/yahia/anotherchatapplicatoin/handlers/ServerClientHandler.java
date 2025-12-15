@@ -1,8 +1,8 @@
 package com.yahia.anotherchatapplicatoin.handlers;
 
-import com.google.gson.Gson;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
+import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
 import com.yahia.anotherchatapplicatoin.server.Server;
 
 import java.io.BufferedReader;
@@ -27,8 +27,11 @@ public class ServerClientHandler implements Runnable {
         out = new PrintWriter(clientSocket.getOutputStream(), true);
     }
 
-    public void sendMessageToClient(BroadCastMessage message) {
-        out.println(prefixMessage(message.sender(), message.text()));
+
+
+    public void sendMessageToClient(CommunicationPacket packet) {
+        CommunicationPacket broadBastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, packet.payload());
+        out.println(JsonHelper.GSON.toJson(broadBastPacket));
         LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", CLIENT_SOCKET.getInetAddress().getHostAddress()));
     }
 
@@ -38,6 +41,7 @@ public class ServerClientHandler implements Runnable {
     private void handleBroadCast(CommunicationPacket packet){
         CHAT_SERVER.broadCastPacket(packet);
     };
+
     private void handlePrivateMessage(CommunicationPacket packet) {
 
     }
