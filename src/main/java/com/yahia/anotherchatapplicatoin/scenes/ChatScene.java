@@ -8,6 +8,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -23,19 +24,19 @@ public class ChatScene {
     private final int WIDTH = 880, HEIGHT = 550;
 
 
-    public ChatScene(String ip, int port, String username, Client client){
+    public ChatScene(Stage stage, Client client){
         initControls();
         applyConstraints();
-        initController(ip, port, username, client);
         buildUi();
+        initController(stage, client);
     }
 
     public Scene getScene() {
         return chatScene;
     }
 
-    private void initController(String ip, int port, String username, Client client){
-        new ChatSceneController(chatTextArea, sendButton, messageTextField, client);
+    private void initController(Stage stage, Client client){
+        new ChatSceneController(chatTextArea, sendButton, messageTextField, client, stage);
     }
     private void initControls() {
         chatTextArea = new TextArea();
@@ -50,7 +51,6 @@ public class ChatScene {
     private void buildUi() {
         root.setCenter(chatTextArea);
         root.setBottom(bottomBar);
-
     }
 
     private void applyConstraints() {

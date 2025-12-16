@@ -4,9 +4,8 @@ import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeResponse;
-import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
-import com.yahia.anotherchatapplicatoin.protocol.message.Message;
+import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
 
 import java.io.*;
 import java.net.Socket;
@@ -37,7 +36,6 @@ public class Client {
         startListener();
     }
 
-    //TODO: server-client protocol: client name first, then messages follow
     public void sendMessage(String message) {
         out.println(message);
     }
@@ -60,8 +58,6 @@ public class Client {
         }
     }
 
-    //TODO: replace this goofy aah message with binary protocol or JSON packets
-    //TODO: Message Struct
     private String prefixName(String name, String message) {
         return String.format("[%s]: %s", name, message);
     }

@@ -3,7 +3,7 @@ package com.yahia.anotherchatapplicatoin.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeRequest;
+import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
 import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
 import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
@@ -23,7 +23,7 @@ public class LoginSceneController {
     }
 
     private void switchToChatScene() {
-        STAGE.setScene(new ChatScene(LOGIN_SCENE.getIpAddress(), LOGIN_SCENE.getPort(), LOGIN_SCENE.getUsername(), client).getScene());
+        STAGE.setScene(new ChatScene(STAGE, client).getScene());
     }
     private void initializeHandShakeListener() {
         client.setHandShakeListener(this::onHandShakeStatusReceived);
@@ -34,13 +34,13 @@ public class LoginSceneController {
                 UiUtils.createAlert(Alert.AlertType.INFORMATION, "Logged In", status.message()).showAndWait();
                 switchToChatScene();
             }else {
-                UiUtils.createAlert(Alert.AlertType.ERROR, "Login Failed", status.message()).showAndWait();
+                UiUtils.createAlert(Alert.AlertType.WARNING, "Login Failed", status.message()).showAndWait();
             }
         });
     }
     private void sendHandShake() {
-        String jsonUsername = JsonHelper.GSON.toJson(new HandShakeRequest(client.getClientName()));
-        CommunicationPacket handShakePacket = new CommunicationPacket(MessageType.HANDSHAKE_REQUEST, jsonUsername);
+        String username = JsonHelper.GSON.toJson(new HandShakeRequest(client.getClientName()));
+        CommunicationPacket handShakePacket = new CommunicationPacket(MessageType.HANDSHAKE_REQUEST, username);
         client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
     }
 
