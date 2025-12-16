@@ -62,13 +62,4 @@ public class ChatScene {
         HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
     }
 
-    private String getInput() {
-        return messageTextField.getText();
-    }
-
-    //TODO: sets the message listener function for the client, check Platform.runLater()
-    private void listenToUpdates() {
-
-    }
-
 }

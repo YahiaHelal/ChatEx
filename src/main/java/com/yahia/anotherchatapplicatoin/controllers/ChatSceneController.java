@@ -2,6 +2,8 @@ package com.yahia.anotherchatapplicatoin.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.protocol.*;
+import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
 import javafx.application.Platform;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -24,20 +26,25 @@ public class ChatSceneController {
         this.sendButton = sendButton;
         this.inputField = inputField;
         this.client = client;
-        initializeListener();
+        initializeMessageListener();
         setUpSendButton();
     }
 
 
-    private void initializeListener() {
+    private void initializeMessageListener() {
         client.setMessageListener(this::onMessageReceived);
-        client.sendMessage(String.format("%s Has Joined The Chat Room, Greet the hell out of em", client.getClientName()), true);
+        sendMessage(String.format("%s Has Joined The Chat Room, Greet the hell out of em", client.getClientName()), true);
+    }
+    private void sendMessage(String message, boolean firstMessage) {
+        BroadCastMessage broadCastMessage = new BroadCastMessage(firstMessage ? "SERVER" : client.getClientName(), message);
+        CommunicationPacket broadCastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
+        client.sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
     }
     private void setUpSendButton() {
         sendButton.setOnAction(actionEvent -> {
             String msg = inputField.getText();
             if(!msg.isBlank()) {
-                client.sendMessage(msg, false);
+                sendMessage(msg, false);
                 inputField.clear();
             }
         });

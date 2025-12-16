@@ -2,11 +2,15 @@ package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
-import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
+import com.yahia.anotherchatapplicatoin.protocol.*;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeRequest;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
 import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
-import javafx.stage.Stage;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -26,6 +30,7 @@ public class Server {
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
+    //TODO: system-wise responsibility
     public Server(int serverPort) {
         this.SERVER_PORT = serverPort;
         CLIENTS = ConcurrentHashMap.newKeySet();
@@ -48,22 +53,26 @@ public class Server {
     public int getServerPort() {
         return SERVER_PORT;
     }
-
-
     public void sendMessage(Socket clientSocket, String message) {
         try {
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             out.println(message);
-
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
         }
 
     }
-    public void broadCastMessage(String message) {
-        for(ServerClientHandler client: CLIENTS) {
-            client.sendMessage(message);
+
+    public void broadCastPacket(CommunicationPacket packet) {
+        for(ServerClientHandler clientHandler: CLIENTS) {
+            clientHandler.sendMessageToClient(packet);
         }
+    }
+
+    //TODO: client can disconnect form the server, should rollback ui to login screen
+    //TODO: when disconnected, server should broadcast the info
+    public void removeClient(ServerClientHandler clientHandler) {
+        CLIENTS.remove(clientHandler);
     }
 
 
@@ -71,13 +80,15 @@ public class Server {
         serverSocket = new ServerSocket(SERVER_PORT);
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
     }
-    private void addClient(ServerClientHandler clientHandler) {
-        CLIENTS.add(clientHandler);
-    }
 
-    //TODO: client can disconnect form the server, should rollback ui to login screen
-    private void removeClient(ServerClientHandler clientHandler) {
-        CLIENTS.remove(clientHandler);
+    private ConnectionStatus handleHandShake(CommunicationPacket packet) {
+        LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
+        HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(packet.payload(), HandShakeRequest.class);
+        if(CLIENT_NAMES.contains(handShakeRequest.username())) {
+            return ConnectionStatus.REJECT_USERNAME_TAKEN;
+        }
+        CLIENT_NAMES.add(handShakeRequest.username());
+        return ConnectionStatus.ACCEPT;
     }
 
 
@@ -86,13 +97,30 @@ public class Server {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
+                    BufferedReader tempIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    PrintWriter tempOut = new PrintWriter(clientSocket.getOutputStream(), true);
 
-                    //BUG: same client info with different object reference will be stored normally
-                    addClient(clientHandler);
+                    // receives the Header first
+                    CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
+                    switch(clientSentPacket.type()) {
+                        case HANDSHAKE_REQUEST -> {
+                            ConnectionStatus handShakeConnectionStatus = handleHandShake(clientSentPacket);
+                            CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, JsonHelper.GSON.toJson(new HandShakeResponse(handShakeConnectionStatus)));
 
-                    LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-                    new Thread(clientHandler).start();
+                            tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
+
+                            if(handShakeConnectionStatus == ConnectionStatus.ACCEPT) {
+                                ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
+                                CLIENTS.add(clientHandler);
+                                LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+                                new Thread(clientHandler).start();
+                            }
+                        }
+                        default -> {
+                            LOGGER.log(Level.SEVERE, "UNKNOWN HEADER");
+                        }
+
+                    }
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
                 }

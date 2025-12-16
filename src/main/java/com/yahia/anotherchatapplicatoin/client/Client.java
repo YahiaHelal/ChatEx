@@ -1,8 +1,13 @@
 package com.yahia.anotherchatapplicatoin.client;
 
-import com.yahia.anotherchatapplicatoin.client.lisitener.MessageListener;
-import com.yahia.anotherchatapplicatoin.controllers.ChatSceneController;
+import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
+import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.protocol.*;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
+import com.yahia.anotherchatapplicatoin.protocol.message.Message;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -14,28 +19,29 @@ public class Client {
     private PrintWriter out;
     private Socket clientSocket;
     private String clientName;
-    private MessageListener listener;
+    private MessageListener messageListener;
+    private HandShakeListener handShakeListener;
 
-    public void setMessageListener(MessageListener listener) {
-        this.listener = listener;
+    public void setMessageListener(MessageListener messageListener) {
+        this.messageListener = messageListener;
+    }
+    public void setHandShakeListener(HandShakeListener handShakeListener) {
+        this.handShakeListener = handShakeListener;
     }
 
     //TODO: client fetches the server's old messages when connected
-    public Client(String serverIp, int serverPort, String clientName) {
+    public Client(String clientName, String serverIp, int serverPort) {
         this.clientName = clientName;
-
         connect(serverIp, serverPort);
         initMessengers();
         startListener();
     }
 
-    public void sendMessage(String message, boolean firstConnection) {
-        if(firstConnection) {
-            out.println(prefixMessage("SERVER", message));
-        }else {
-            out.println(prefixMessage(clientName, message));
-        }
+    //TODO: server-client protocol: client name first, then messages follow
+    public void sendMessage(String message) {
+        out.println(message);
     }
+
 
     public void setClientName(String name) {
         this.clientName = name;
@@ -45,10 +51,18 @@ public class Client {
         return clientName;
     }
 
+    public void closeClientSocket() {
+        try {
+            LOGGER.log(Level.INFO, "Closing client socket");
+            clientSocket.close();
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Couldn't close client socket");
+        }
+    }
 
     //TODO: replace this goofy aah message with binary protocol or JSON packets
     //TODO: Message Struct
-    private String prefixMessage(String name, String message) {
+    private String prefixName(String name, String message) {
         return String.format("[%s]: %s", name, message);
     }
 
@@ -72,25 +86,49 @@ public class Client {
         }
     }
 
+    private void handleHandShakeResponse(CommunicationPacket packet) {
+        HandShakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandShakeResponse.class);
+        if(handShakeResponse.status() != ConnectionStatus.ACCEPT) {
+            closeClientSocket();
+        }
+        notifyHandShakeListener(handShakeResponse.status());
+    }
 
+    private void notifyHandShakeListener(ConnectionStatus status) {
+        if(handShakeListener != null) {
+            handShakeListener.onHandShake(status);
+        }
+    }
 
+    private void notifyMessageListener(BroadCastMessage message) {
+        if(messageListener != null) {
+            messageListener.onMessage(prefixName(message.sender(), message.text()));
+        }
+    }
+
+    private void handleBroadCastMessage(CommunicationPacket packet) {
+        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
+        notifyMessageListener(broadCastMessage);
+    }
 
     private void startListener() {
         new Thread(this::listen).start();
     }
 
-
-    //TODO: receive messages in a new thread, multiple servers may try to write at the same time
     private void listen() {
         String msg;
         try {
             while((msg = in.readLine()) != null) {
-                if(listener != null) {
-                    listener.onMessage(msg);
+                LOGGER.log(Level.INFO, String.format("Message sent to client : %s", msg));
+                CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
+                //TODO: apply OCP later
+                switch (serverSentPacket.type()) {
+                    case HANDSHAKE_RESPONSE -> handleHandShakeResponse(serverSentPacket);
+                    case BROADCAST_MESSAGE -> handleBroadCastMessage(serverSentPacket);
                 }
             }
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error while collecting server message");
+            LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
         }
     }
 }

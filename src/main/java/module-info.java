@@ -3,8 +3,9 @@ module org.example.anotherchatapplicatoin {
     requires javafx.fxml;
     requires java.desktop;
     requires jdk.jshell;
-    requires java.logging;
     requires java.management;
+    requires com.google.gson;
+    requires java.logging;
 
 
     opens com.yahia.anotherchatapplicatoin.app to javafx.fxml;
@@ -21,6 +22,14 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.anotherchatapplicatoin.utils.ui;
     opens com.yahia.anotherchatapplicatoin.utils.backend to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.utils.backend;
-    opens com.yahia.anotherchatapplicatoin.client.lisitener to javafx.fxml;
-    exports com.yahia.anotherchatapplicatoin.client.lisitener;
+    opens com.yahia.anotherchatapplicatoin.client.listeners to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.client.listeners;
+    exports com.yahia.anotherchatapplicatoin.protocol;
+    opens com.yahia.anotherchatapplicatoin.protocol to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.message;
+    opens com.yahia.anotherchatapplicatoin.protocol.message to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.handshake;
+    opens com.yahia.anotherchatapplicatoin.protocol.handshake to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.disconnect;
+    opens com.yahia.anotherchatapplicatoin.protocol.disconnect to javafx.fxml;
 }

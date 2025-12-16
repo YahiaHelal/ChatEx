@@ -1,8 +1,6 @@
 package com.yahia.anotherchatapplicatoin.scenes;
 
-import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.controllers.LoginSceneController;
-import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -10,9 +8,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-import java.util.InputMismatchException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class LoginScene{
     private TextField usernameTextField;
@@ -23,11 +18,29 @@ public class LoginScene{
     private Scene loginScene;
     private final int WIDTH = 600, HEIGHT = 400;
     private LoginSceneController controller;
+
     public LoginScene(Stage stage) {
         initControls();
         buildUi();
         initController(stage);
     }
+
+    public String getIpAddress() {
+        return ipAddressTextField.getText();
+    }
+    public int getPort() throws NumberFormatException{
+        return Integer.parseInt(portTextField.getText());
+    }
+    public String getUsername() {
+        return usernameTextField.getText();
+    }
+    public Scene getScene() {
+        return loginScene;
+    }
+    public Button getLoginButton() {
+        return loginButton;
+    }
+
 
     private void initControls() {
         usernameTextField = new TextField();
@@ -53,22 +66,5 @@ public class LoginScene{
         loginButton.setPrefWidth(75);
         usernameTextField.setPrefWidth(200);
 
-    }
-    public String getIpAddress() {
-        return ipAddressTextField.getText();
-    }
-    public int getPort() throws NumberFormatException{
-        return Integer.parseInt(portTextField.getText());
-    }
-
-    public String getUsername() {
-        return usernameTextField.getText();
-    }
-
-    public Scene getScene() {
-        return loginScene;
-    }
-    public Button getLoginButton() {
-        return loginButton;
     }
 }
