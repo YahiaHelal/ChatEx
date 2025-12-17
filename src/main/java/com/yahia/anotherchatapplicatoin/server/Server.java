@@ -3,9 +3,8 @@ package com.yahia.anotherchatapplicatoin.server;
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.managers.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeRequest;
-import com.yahia.anotherchatapplicatoin.protocol.handshake.HandShakeResponse;
-import com.yahia.anotherchatapplicatoin.protocol.message.BroadCastMessage;
+import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
+import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
 import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
 
 import java.io.BufferedReader;
@@ -71,9 +70,16 @@ public class Server {
 
     //TODO: client can disconnect form the server, should rollback ui to login screen
     //TODO: when disconnected, server should broadcast the info
-    public void removeClient(ServerClientHandler clientHandler) {
+    //TODO: use Disconnect Request-Response records
+    public void removeClient(ServerClientHandler clientHandler, String clientUsername) {
         CLIENTS.remove(clientHandler);
+        CLIENT_NAMES.remove(clientUsername);
+        LOGGER.log(Level.INFO, String.format("%s has disconnected", clientUsername));
+        String info = JsonHelper.GSON.toJson(new BroadCastMessage("SERVER", String.format("%s has been disconnected", clientUsername)));
+        broadCastPacket(new CommunicationPacket(MessageType.BROADCAST_MESSAGE, info));
     }
+
+
 
 
     private void run() throws IOException {
@@ -81,15 +87,15 @@ public class Server {
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
     }
 
-    private ConnectionStatus handleHandShake(CommunicationPacket packet) {
+    private ConnectionStatus handleHandShake(HandShakeRequest handShakeRequest) {
         LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
-        HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(packet.payload(), HandShakeRequest.class);
         if(CLIENT_NAMES.contains(handShakeRequest.username())) {
             return ConnectionStatus.REJECT_USERNAME_TAKEN;
         }
         CLIENT_NAMES.add(handShakeRequest.username());
         return ConnectionStatus.ACCEPT;
     }
+
 
 
     private void listen(){
@@ -104,13 +110,15 @@ public class Server {
                     CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
                     switch(clientSentPacket.type()) {
                         case HANDSHAKE_REQUEST -> {
-                            ConnectionStatus handShakeConnectionStatus = handleHandShake(clientSentPacket);
-                            CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, JsonHelper.GSON.toJson(new HandShakeResponse(handShakeConnectionStatus)));
+                            HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandShakeRequest.class);
+                            ConnectionStatus connectionStatus = handleHandShake(handShakeRequest);
+                            String response = JsonHelper.GSON.toJson(new HandShakeResponse(connectionStatus));
+                            CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, response);
 
                             tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
 
-                            if(handShakeConnectionStatus == ConnectionStatus.ACCEPT) {
-                                ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this);
+                            if(connectionStatus == ConnectionStatus.ACCEPT) {
+                                ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, handShakeRequest.username());
                                 CLIENTS.add(clientHandler);
                                 LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
                                 new Thread(clientHandler).start();
