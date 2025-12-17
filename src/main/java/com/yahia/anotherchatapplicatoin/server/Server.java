@@ -96,11 +96,7 @@ public class Server {
         return ConnectionStatus.ACCEPT;
     }
 
-    private void greetClient(String clientUsername) {
-        String msg = String.format("%s Has Joined The Chat Room, Greet the hell out of em", clientUsername);
-        String greet = JsonHelper.GSON.toJson(new BroadCastMessage("SERVER", msg));
-        broadCastPacket(new CommunicationPacket(MessageType.BROADCAST_MESSAGE, greet));
-    }
+
 
     private void listen(){
         new Thread(() -> {
@@ -126,8 +122,6 @@ public class Server {
                                 CLIENTS.add(clientHandler);
                                 LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
                                 new Thread(clientHandler).start();
-                                //FIX: greetings not appearing for the first client, fired before chat scene loads
-                                greetClient(handShakeRequest.username());
                             }
                         }
                         default -> {

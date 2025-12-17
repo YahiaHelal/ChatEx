@@ -21,22 +21,32 @@ public class ChatScene {
     private Scene chatScene;
     private TextField messageTextField;
     private HBox bottomBar;
+    private ChatSceneController controller;
     private final int WIDTH = 880, HEIGHT = 550;
+    private final Stage STAGE;
 
 
     public ChatScene(Stage stage, Client client){
+        this.STAGE = stage;
         initControls();
         applyConstraints();
         buildUi();
-        initController(stage, client);
+        initController(client);
     }
 
     public Scene getScene() {
         return chatScene;
     }
 
-    private void initController(Stage stage, Client client){
-        new ChatSceneController(chatTextArea, sendButton, messageTextField, client, stage);
+    public void onShown() {
+        controller.onSceneShown();
+    }
+
+    private void initController(Client client){
+        controller = new ChatSceneController(chatTextArea, sendButton, messageTextField, client);
+        STAGE.setOnCloseRequest(windowEvent -> {
+            controller.onSceneClosed();
+        });
     }
     private void initControls() {
         chatTextArea = new TextArea();

@@ -12,18 +12,21 @@ import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 public class LoginSceneController {
-    private final LoginScene LOGIN_SCENE;
+    private final LoginScene loginScene;
+    private ChatScene chatScene;
     private final Stage STAGE;
     private Client client;
 
     public LoginSceneController(LoginScene loginScene, Stage stage) {
-       this.LOGIN_SCENE = loginScene;
+       this.loginScene = loginScene;
        this.STAGE = stage;
        setUpLoginButton();
     }
 
     private void switchToChatScene() {
-        STAGE.setScene(new ChatScene(STAGE, client).getScene());
+        chatScene = new ChatScene(STAGE, client);
+        STAGE.setScene(chatScene.getScene());
+        chatScene.onShown();
     }
     private void initializeHandShakeListener() {
         client.setHandShakeListener(this::onHandShakeStatusReceived);
@@ -45,8 +48,8 @@ public class LoginSceneController {
     }
 
     private void setUpLoginButton() {
-        LOGIN_SCENE.getLoginButton().setOnAction(actionEvent -> {
-            client = new Client(LOGIN_SCENE.getUsername(), LOGIN_SCENE.getIpAddress(), LOGIN_SCENE.getPort());
+        loginScene.getLoginButton().setOnAction(actionEvent -> {
+            client = new Client(loginScene.getUsername(), loginScene.getIpAddress(), loginScene.getPort());
             initializeHandShakeListener();
             sendHandShake();
         });
