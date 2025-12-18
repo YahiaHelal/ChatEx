@@ -12,7 +12,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Client {
+public class Client extends AbstractClient{
     private final Logger LOGGER = LogManager.getLogger();
     private BufferedReader in;
     private PrintWriter out;
@@ -29,11 +29,10 @@ public class Client {
     }
 
     //TODO: client fetches the server's old messages when connected
-    public Client(String clientName, String serverIp, int serverPort) {
+    //TODO: introduce ClientController that implements ClientListener
+    public Client(String clientName, String serverIp, int port) {
         this.clientName = clientName;
-        connect(serverIp, serverPort);
-        initMessengers();
-        startListener();
+        startNewClient(serverIp, port);
     }
 
     public void sendMessage(String message) {
@@ -58,11 +57,10 @@ public class Client {
         }
     }
 
-    private String prefixName(String name, String message) {
-        return String.format("[%s]: %s", name, message);
-    }
 
-    private void initMessengers(){
+
+    @Override
+    protected void initMessengers(){
         try {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -74,16 +72,40 @@ public class Client {
     }
 
 
-    private void connect(String serverIp, int serverPort)  {
+    @Override
+    protected void connect(String serverIp, int serverPort)  {
         try {
             clientSocket = new Socket(serverIp, serverPort);
         }catch(IOException e) {
             LOGGER.log(Level.SEVERE, "Couldn't initiate socket to the Server");
         }
     }
+    @Override
+    protected void startListener() {
+        new Thread(this::listen).start();
+    }
+
+
+    private void listen() {
+        String msg;
+        try {
+            while((msg = in.readLine()) != null) {
+                LOGGER.log(Level.INFO, String.format("Message sent to client : %s", msg));
+                CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
+                //TODO: apply OCP later
+                switch (serverSentPacket.type()) {
+                    case HANDSHAKE_RESPONSE -> handleHandShakeResponse(serverSentPacket);
+                    case BROADCAST_MESSAGE -> handleBroadCastMessage(serverSentPacket);
+                }
+            }
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
+        }
+    }
 
     private void handleHandShakeResponse(CommunicationPacket packet) {
         HandShakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandShakeResponse.class);
+
         if(handShakeResponse.status() != ConnectionStatus.ACCEPT) {
             closeClientSocket();
         }
@@ -107,24 +129,8 @@ public class Client {
         notifyMessageListener(broadCastMessage);
     }
 
-    private void startListener() {
-        new Thread(this::listen).start();
-    }
 
-    private void listen() {
-        String msg;
-        try {
-            while((msg = in.readLine()) != null) {
-                LOGGER.log(Level.INFO, String.format("Message sent to client : %s", msg));
-                CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
-                //TODO: apply OCP later
-                switch (serverSentPacket.type()) {
-                    case HANDSHAKE_RESPONSE -> handleHandShakeResponse(serverSentPacket);
-                    case BROADCAST_MESSAGE -> handleBroadCastMessage(serverSentPacket);
-                }
-            }
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
-        }
+    private String prefixName(String name, String message) {
+        return String.format("[%s]: %s", name, message);
     }
 }

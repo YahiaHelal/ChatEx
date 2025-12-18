@@ -52,15 +52,6 @@ public class Server {
     public int getServerPort() {
         return SERVER_PORT;
     }
-    public void sendMessage(Socket clientSocket, String message) {
-        try {
-            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
-            out.println(message);
-        }catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Server couldn't send the message %s", message);
-        }
-
-    }
 
     public void broadCastPacket(CommunicationPacket packet) {
         for(ServerClientHandler clientHandler: CLIENTS) {
@@ -84,7 +75,7 @@ public class Server {
 
     private void run() throws IOException {
         serverSocket = new ServerSocket(SERVER_PORT);
-        LOGGER.log(Level.INFO, String.format("Server running on %s:%d", serverSocket.getInetAddress().getHostAddress(), SERVER_PORT));
+        LOGGER.log(Level.INFO, String.format("Server running on %s:%d", SocketUtils.getServerSocketAddress(serverSocket), SERVER_PORT));
     }
 
     private ConnectionStatus handleHandShake(HandShakeRequest handShakeRequest) {
@@ -96,7 +87,9 @@ public class Server {
         return ConnectionStatus.ACCEPT;
     }
 
+    private void fireNewHandler() {
 
+    }
 
     private void listen(){
         new Thread(() -> {

@@ -2,25 +2,22 @@ package com.yahia.anotherchatapplicatoin.controllers;
 
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.controllers.listeners.LoginSceneListener;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
 import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
-import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
-public class LoginSceneController {
-    private final LoginScene loginScene;
+public class LoginSceneController implements LoginSceneListener {
     private ChatScene chatScene;
     private final Stage STAGE;
     private Client client;
 
-    public LoginSceneController(LoginScene loginScene, Stage stage) {
-       this.loginScene = loginScene;
+    public LoginSceneController(Stage stage) {
        this.STAGE = stage;
-       setUpLoginButton();
     }
 
     private void switchToChatScene() {
@@ -47,12 +44,11 @@ public class LoginSceneController {
         client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
     }
 
-    private void setUpLoginButton() {
-        loginScene.getLoginButton().setOnAction(actionEvent -> {
-            client = new Client(loginScene.getUsername(), loginScene.getIpAddress(), loginScene.getPort());
-            initializeHandShakeListener();
-            sendHandShake();
-        });
-    }
 
+    @Override
+    public void onLoginButtonClicked(String username, String ipAddress, int port) {
+        client = new Client(username, ipAddress, port);
+        initializeHandShakeListener();
+        sendHandShake();
+    }
 }
