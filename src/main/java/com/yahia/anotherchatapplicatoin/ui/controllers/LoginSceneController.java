@@ -3,6 +3,7 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
@@ -44,10 +45,15 @@ public class LoginSceneController implements LoginSceneListener {
             }
         });
     }
+    //TODO: handle send message
     private void sendHandShake() {
         String username = JsonHelper.GSON.toJson(new HandShakeRequest(client.getClientName()));
         CommunicationPacket handShakePacket = new CommunicationPacket(MessageType.HANDSHAKE_REQUEST, username);
-        client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
+        try {
+            client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
     }
 
     @Override

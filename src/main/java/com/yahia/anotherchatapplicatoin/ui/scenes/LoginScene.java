@@ -2,7 +2,6 @@ package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 import com.yahia.anotherchatapplicatoin.ui.controllers.LoginSceneController;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
-import com.yahia.anotherchatapplicatoin.utils.UiUtils;
 import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
