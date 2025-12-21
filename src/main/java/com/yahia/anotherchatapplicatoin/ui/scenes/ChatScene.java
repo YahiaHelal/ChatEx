@@ -1,8 +1,9 @@
-package com.yahia.anotherchatapplicatoin.scenes;
+package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
-import com.yahia.anotherchatapplicatoin.controllers.ChatSceneController;
-import com.yahia.anotherchatapplicatoin.controllers.listeners.ChatSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.controllers.ChatSceneController;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -21,6 +22,7 @@ public class ChatScene extends AbstractChatScene{
     private TextField messageTextField;
     private HBox bottomBar;
     private ChatSceneListener chatSceneListener;
+    private ServerEventsListener serverEventsListener;
     private final int WIDTH = 880, HEIGHT = 550;
     private final Stage STAGE;
 
@@ -37,6 +39,10 @@ public class ChatScene extends AbstractChatScene{
 
     public void onShown() {
         chatSceneListener.onSceneShown();
+    }
+
+    public void switchToLoginScene() {
+
     }
 
     @Override
@@ -79,6 +85,7 @@ public class ChatScene extends AbstractChatScene{
         sendButton.setOnAction(actionEvent -> {
             chatSceneListener.onSendButtonClicked();
         });
+        serverEventsListener.onServerShutDown();
     }
 
 }

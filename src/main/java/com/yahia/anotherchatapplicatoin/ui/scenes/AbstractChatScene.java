@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.scenes;
+package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 

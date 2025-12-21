@@ -1,19 +1,22 @@
-package com.yahia.anotherchatapplicatoin.controllers;
+package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 
-import com.yahia.anotherchatapplicatoin.controllers.listeners.ChatSceneListener;
-import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
+import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
 import javafx.application.Platform;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class ChatSceneController implements ChatSceneListener {
+public class ChatSceneController implements ChatSceneListener, ServerEventsListener {
     private final Client client;
     private final TextArea chatArea;
     private final TextField inputField;
@@ -68,5 +71,11 @@ public class ChatSceneController implements ChatSceneListener {
     private void sendDisconnectRequest() {
         String info = JsonHelper.GSON.toJson(new DisconnectRequest(client.getClientName()));
         client.sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
+    }
+
+    // SceneManager should switch Scenes
+    @Override
+    public void onServerShutDown() {
+
     }
 }

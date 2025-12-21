@@ -1,6 +1,6 @@
 package com.yahia.anotherchatapplicatoin.app;
 
-import com.yahia.anotherchatapplicatoin.scenes.LoginScene;
+import com.yahia.anotherchatapplicatoin.ui.scenes.LoginScene;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

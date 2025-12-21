@@ -2,7 +2,7 @@ package com.yahia.anotherchatapplicatoin.client;
 
 import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
-import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
 import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
@@ -30,12 +30,15 @@ public class Client extends AbstractClient{
 
     //TODO: client fetches the server's old messages when connected
     //TODO: introduce ClientController that implements ClientListener
-    public Client(String clientName, String serverIp, int port) {
+    public Client(String clientName, String serverIp, int port) throws IOException {
         this.clientName = clientName;
         startNewClient(serverIp, port);
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(String message) throws IOException {
+        if(clientSocket.isClosed()) {
+            throw new IOException("Client can't send message while it's closed");
+        }
         out.println(message);
     }
 
@@ -73,12 +76,8 @@ public class Client extends AbstractClient{
 
 
     @Override
-    protected void connect(String serverIp, int serverPort)  {
-        try {
-            clientSocket = new Socket(serverIp, serverPort);
-        }catch(IOException e) {
-            LOGGER.log(Level.SEVERE, "Couldn't initiate socket to the Server");
-        }
+    protected void connect(String serverIp, int serverPort) throws IOException {
+        clientSocket = new Socket(serverIp, serverPort);
     }
     @Override
     protected void startListener() {

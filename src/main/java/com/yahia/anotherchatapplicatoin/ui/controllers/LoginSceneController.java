@@ -1,20 +1,26 @@
-package com.yahia.anotherchatapplicatoin.controllers;
+package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 
 import com.yahia.anotherchatapplicatoin.client.Client;
-import com.yahia.anotherchatapplicatoin.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
+import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
-import com.yahia.anotherchatapplicatoin.scenes.ChatScene;
-import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
+import com.yahia.anotherchatapplicatoin.ui.scenes.ChatScene;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class LoginSceneController implements LoginSceneListener {
     private ChatScene chatScene;
     private final Stage STAGE;
     private Client client;
+    private static final Logger LOGGER = LogManager.getLogger();
 
     public LoginSceneController(Stage stage) {
        this.STAGE = stage;
@@ -31,10 +37,10 @@ public class LoginSceneController implements LoginSceneListener {
     private void onHandShakeStatusReceived(ConnectionStatus status) {
         Platform.runLater(() -> {
             if(status == ConnectionStatus.ACCEPT) {
-                UiUtils.createAlert(Alert.AlertType.INFORMATION, "Logged In", status.message()).showAndWait();
+                AlertUtils.createAlert(Alert.AlertType.INFORMATION, "Logged In", status.message()).showAndWait();
                 switchToChatScene();
             }else {
-                UiUtils.createAlert(Alert.AlertType.WARNING, "Login Failed", status.message()).showAndWait();
+                AlertUtils.createAlert(Alert.AlertType.WARNING, "Login Failed", status.message()).showAndWait();
             }
         });
     }
@@ -44,11 +50,15 @@ public class LoginSceneController implements LoginSceneListener {
         client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
     }
 
-
     @Override
     public void onLoginButtonClicked(String username, String ipAddress, int port) {
-        client = new Client(username, ipAddress, port);
-        initializeHandShakeListener();
-        sendHandShake();
+        try {
+            client = new Client(username, ipAddress, port);
+            initializeHandShakeListener();
+            sendHandShake();
+        }catch(IOException e) {
+            LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s:%d", username, ipAddress, port));
+            AlertUtils.createAlert(Alert.AlertType.WARNING, String.format("there is no running server at %s:%d", ipAddress, port), "Login Failed").showAndWait();
+        }
     }
 }

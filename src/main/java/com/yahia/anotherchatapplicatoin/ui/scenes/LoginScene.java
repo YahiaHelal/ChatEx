@@ -1,8 +1,9 @@
-package com.yahia.anotherchatapplicatoin.scenes;
+package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.controllers.LoginSceneController;
-import com.yahia.anotherchatapplicatoin.controllers.listeners.LoginSceneListener;
-import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
+import com.yahia.anotherchatapplicatoin.ui.controllers.LoginSceneController;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.utils.UiUtils;
+import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -63,7 +64,7 @@ public class LoginScene extends AbstractLoginScene {
         loginGrid.add(ipAddressTextField, 0, 1);
         loginGrid.add(portTextField, 0, 2);
         loginGrid.add(loginButton, 0, 3);
-        UiUtils.setLoginGridSpacing(loginGrid);
+        LayoutUtils.setLoginGridSpacing(loginGrid);
         loginButton.setPrefWidth(75);
         usernameTextField.setPrefWidth(200);
 

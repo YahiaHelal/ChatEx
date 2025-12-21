@@ -1,11 +1,11 @@
 package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
-import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
-import com.yahia.anotherchatapplicatoin.utils.backend.SocketUtils;
+import com.yahia.anotherchatapplicatoin.utils.network.SocketUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;

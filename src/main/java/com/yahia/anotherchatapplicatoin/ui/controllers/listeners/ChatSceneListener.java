@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.controllers.listeners;
+package com.yahia.anotherchatapplicatoin.ui.controllers.listeners;
 
 public interface ChatSceneListener {
     void onSceneClosed();

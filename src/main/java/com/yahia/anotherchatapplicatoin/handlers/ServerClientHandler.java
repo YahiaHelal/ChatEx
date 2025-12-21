@@ -1,6 +1,6 @@
 package com.yahia.anotherchatapplicatoin.handlers;
 
-import com.yahia.anotherchatapplicatoin.managers.LogManager;
+import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.server.Server;
 
