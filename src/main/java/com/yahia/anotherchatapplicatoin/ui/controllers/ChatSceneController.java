@@ -57,20 +57,35 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
     private void initializeMessageListener() {
         client.setMessageListener(this::onMessageReceived);
     }
+
+    //TODO: handle client.sendMessage
+
     private void sendMessage(String message) {
         BroadCastMessage broadCastMessage = new BroadCastMessage(client.getClientName(), message);
         CommunicationPacket broadCastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
-        client.sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
+        try {
+            client.sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
     }
     private void greetClient() {
         BroadCastMessage msg = new BroadCastMessage("SERVER", String.format("%s Has Joined The Chat Room, Greet the hell out of em", client.getClientName()));
         CommunicationPacket packet = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(msg));
-        client.sendMessage(JsonHelper.GSON.toJson(packet));
+        try {
+            client.sendMessage(JsonHelper.GSON.toJson(packet));
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
     }
 
     private void sendDisconnectRequest() {
         String info = JsonHelper.GSON.toJson(new DisconnectRequest(client.getClientName()));
-        client.sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
+        try {
+            client.sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
+        }catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
     }
 
     // SceneManager should switch Scenes
