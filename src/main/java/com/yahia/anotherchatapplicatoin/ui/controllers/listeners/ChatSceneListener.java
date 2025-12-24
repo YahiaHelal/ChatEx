@@ -1,7 +1,8 @@
 package com.yahia.anotherchatapplicatoin.ui.controllers.listeners;
 
 public interface ChatSceneListener {
-    void onSceneClosed();
+    void onWindowClosed();
+    void onUserExit();
     void onSceneShown();
     void onSendButtonClicked();
 }

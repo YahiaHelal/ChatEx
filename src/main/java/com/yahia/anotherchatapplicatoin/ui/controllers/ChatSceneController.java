@@ -5,10 +5,12 @@ import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
+import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
@@ -52,10 +54,17 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
     }
 
     @Override
-    public void onSceneClosed() {
+    public void onWindowClosed() {
         sendDisconnectRequest();
         client.closeClientSocket();
         //TODO: navigate to the login scene
+    }
+
+    @Override
+    public void onUserExit() {
+        sendDisconnectRequest();
+        client.closeClientSocket();
+        navigator.showLoginScene();
     }
 
     private void initializeMessageListener() {
@@ -71,6 +80,7 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
             client.sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, e.getMessage());
+            AlertUtils.createAlert(Alert.AlertType.ERROR, "Message has not been sent", "Failed to connect to server").showAndWait();
         }
     }
     private void greetClient() {
@@ -80,6 +90,7 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
             client.sendMessage(JsonHelper.GSON.toJson(packet));
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, e.getMessage());
+            AlertUtils.createAlert(Alert.AlertType.ERROR, "Server has been shut down", "Failed to connect to server").showAndWait();
         }
     }
 
@@ -92,7 +103,6 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
         }
     }
 
-    //TODO: SceneManager should switch Scenes
     @Override
     public void onServerShutDown() {
         navigator.showLoginScene();

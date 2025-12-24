@@ -6,6 +6,7 @@ import com.yahia.anotherchatapplicatoin.ui.controllers.ChatSceneController;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
@@ -18,10 +19,12 @@ import javafx.stage.Stage;
 public class ChatScene extends AbstractChatScene{
     private TextArea chatTextArea;
     private Button sendButton;
+    private Button logoutButton;
     private BorderPane root;
     private Scene chatScene;
     private TextField messageTextField;
     private HBox bottomBar;
+    private HBox topBar;
     private ChatSceneListener chatSceneListener;
     private ServerEventsListener serverEventsListener;
     private final int WIDTH = 880, HEIGHT = 550;
@@ -47,23 +50,26 @@ public class ChatScene extends AbstractChatScene{
     public void setUpActions(Stage stage) {
         chatSceneListener.onSceneShown();
 
-        stage.setOnCloseRequest(windowEvent -> {
-            chatSceneListener.onSceneClosed();
-        });
-
         sendButton.setOnAction(actionEvent -> {
             chatSceneListener.onSendButtonClicked();
+        });
+
+        stage.setOnCloseRequest(windowEvent -> {
+            chatSceneListener.onWindowClosed();
+        });
+
+        logoutButton.setOnAction(actionEvent -> {
+            chatSceneListener.onUserExit();
         });
 
         //TODO: onServerShutDown()
     }
 
 
-    //TODO: called by the Factory
-    //TODO: takes new ChatSceneController(client)
+    //TODO: server event listener
     @Override
-    public void wireController(ChatSceneListener listener, Stage stage) {
-        this.chatSceneListener = listener;
+    public void wireController(ChatSceneListener chatListener, Stage stage) {
+        this.chatSceneListener = chatListener;
         setUpActions(stage);
     }
 
@@ -73,8 +79,10 @@ public class ChatScene extends AbstractChatScene{
         messageTextField = new TextField();
         messageTextField.setPromptText("send your friends an insult to greet them");
         sendButton = new Button("Send");
+        logoutButton = new Button("Logout");
         root = new BorderPane();
         bottomBar = new HBox(10, messageTextField, sendButton);
+        topBar = new HBox(logoutButton);
         chatScene = new Scene(root, WIDTH, HEIGHT);
     }
 
@@ -82,15 +90,23 @@ public class ChatScene extends AbstractChatScene{
     protected void buildUi() {
         root.setCenter(chatTextArea);
         root.setBottom(bottomBar);
+        root.setTop(topBar);
     }
 
     @Override
     protected void applyConstraints() {
         root.setPadding(new Insets(10));
+
         chatTextArea.setEditable(false);
         chatTextArea.setWrapText(true);
+
         bottomBar.setPadding(new Insets(10));
+        topBar.setPadding(new Insets(5, 10, 5, 10));
+        topBar.setAlignment(Pos.CENTER_RIGHT);
+
         sendButton.setPrefWidth(100);
+        logoutButton.setFocusTraversable(false);
+
         HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
     }
 
