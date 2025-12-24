@@ -20,8 +20,8 @@ public class LoginScene extends AbstractLoginScene {
     private final int WIDTH = 600, HEIGHT = 400;
     private LoginSceneListener loginSceneListener;
 
-    public LoginScene(Stage stage) {
-        init(stage);
+    public LoginScene() {
+        init();
     }
 
     public String getIpAddress() {
@@ -39,6 +39,12 @@ public class LoginScene extends AbstractLoginScene {
 
 
     @Override
+    public void wireController(LoginSceneListener listener, Stage stage) {
+        this.loginSceneListener = listener;
+        setUpActions();
+    }
+
+    @Override
     protected void initControls() {
         usernameTextField = new TextField();
         ipAddressTextField = new TextField();
@@ -50,11 +56,6 @@ public class LoginScene extends AbstractLoginScene {
         ipAddressTextField.setPromptText("IP Address");
         portTextField.setPromptText("Port");
 
-    }
-
-    @Override
-    protected void initController(Stage stage) {
-        loginSceneListener = new LoginSceneController(stage);
     }
 
     @Override

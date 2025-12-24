@@ -4,6 +4,7 @@ import com.yahia.anotherchatapplicatoin.client.Client;
 
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
+import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
@@ -21,9 +22,11 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
     private final TextArea chatArea;
     private final TextField inputField;
     private static final Logger LOGGER = LogManager.getLogger();
+    private final SceneNavigator navigator;
 
     //TODO: ui-backend glue should be handled using a single controller
-    public ChatSceneController(TextArea chatArea, TextField inputField, Client client) {
+    public ChatSceneController(SceneNavigator navigator, TextArea chatArea, TextField inputField, Client client) {
+        this.navigator = navigator;
         this.chatArea = chatArea;
         this.inputField = inputField;
         this.client = client;
@@ -52,6 +55,7 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
     public void onSceneClosed() {
         sendDisconnectRequest();
         client.closeClientSocket();
+        //TODO: navigate to the login scene
     }
 
     private void initializeMessageListener() {
@@ -88,9 +92,9 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
         }
     }
 
-    // SceneManager should switch Scenes
+    //TODO: SceneManager should switch Scenes
     @Override
     public void onServerShutDown() {
-
+        navigator.showLoginScene();
     }
 }

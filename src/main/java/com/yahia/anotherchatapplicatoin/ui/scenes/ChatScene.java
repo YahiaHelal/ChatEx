@@ -1,6 +1,7 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.protocol.MessageType;
 import com.yahia.anotherchatapplicatoin.ui.controllers.ChatSceneController;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
@@ -24,33 +25,46 @@ public class ChatScene extends AbstractChatScene{
     private ChatSceneListener chatSceneListener;
     private ServerEventsListener serverEventsListener;
     private final int WIDTH = 880, HEIGHT = 550;
-    private final Stage STAGE;
 
 
-    public ChatScene(Stage stage, Client client){
-        this.STAGE = stage;
-        init(client);
+    public ChatScene(){
+        init();
     }
 
     public Scene getScene() {
         return chatScene;
     }
-
-
-    public void onShown() {
-        chatSceneListener.onSceneShown();
+    public TextArea getChatTextArea() {
+        return chatTextArea;
     }
 
-    public void switchToLoginScene() {
-
+    public TextField getMessageTextField() {
+        return messageTextField;
     }
+
 
     @Override
-    protected void initController(Client client){
-        chatSceneListener = new ChatSceneController(chatTextArea, messageTextField, client);
-        STAGE.setOnCloseRequest(windowEvent -> {
+    public void setUpActions(Stage stage) {
+        chatSceneListener.onSceneShown();
+
+        stage.setOnCloseRequest(windowEvent -> {
             chatSceneListener.onSceneClosed();
         });
+
+        sendButton.setOnAction(actionEvent -> {
+            chatSceneListener.onSendButtonClicked();
+        });
+
+        //TODO: onServerShutDown()
+    }
+
+
+    //TODO: called by the Factory
+    //TODO: takes new ChatSceneController(client)
+    @Override
+    public void wireController(ChatSceneListener listener, Stage stage) {
+        this.chatSceneListener = listener;
+        setUpActions(stage);
     }
 
     @Override
@@ -80,12 +94,6 @@ public class ChatScene extends AbstractChatScene{
         HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
     }
 
-    @Override
-    protected void setUpActions() {
-        sendButton.setOnAction(actionEvent -> {
-            chatSceneListener.onSendButtonClicked();
-        });
-        serverEventsListener.onServerShutDown();
-    }
+
 
 }

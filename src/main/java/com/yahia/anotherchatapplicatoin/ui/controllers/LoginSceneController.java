@@ -3,6 +3,10 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.managers.DefaultSceneFactory;
+import com.yahia.anotherchatapplicatoin.ui.managers.SceneFactory;
+import com.yahia.anotherchatapplicatoin.ui.managers.SceneManager;
+import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.ui.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
@@ -18,20 +22,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoginSceneController implements LoginSceneListener {
-    private ChatScene chatScene;
-    private final Stage STAGE;
+    private final SceneNavigator navigator;
     private Client client;
     private static final Logger LOGGER = LogManager.getLogger();
 
-    public LoginSceneController(Stage stage) {
-       this.STAGE = stage;
+    public  LoginSceneController(SceneNavigator navigator) {
+        this.navigator = navigator;
     }
 
-    private void switchToChatScene() {
-        chatScene = new ChatScene(STAGE, client);
-        STAGE.setScene(chatScene.getScene());
-        chatScene.onShown();
-    }
+
     private void initializeHandShakeListener() {
         client.setHandShakeListener(this::onHandShakeStatusReceived);
     }
@@ -39,7 +38,7 @@ public class LoginSceneController implements LoginSceneListener {
         Platform.runLater(() -> {
             if(status == ConnectionStatus.ACCEPT) {
                 AlertUtils.createAlert(Alert.AlertType.INFORMATION, "Logged In", status.message()).showAndWait();
-                switchToChatScene();
+                navigator.showChatScene(client);
             }else {
                 AlertUtils.createAlert(Alert.AlertType.WARNING, "Login Failed", status.message()).showAndWait();
             }
