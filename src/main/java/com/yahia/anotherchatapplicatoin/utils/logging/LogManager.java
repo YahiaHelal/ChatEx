@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.managers;
+package com.yahia.anotherchatapplicatoin.utils.logging;
 
 import java.io.IOException;
 import java.util.Locale;

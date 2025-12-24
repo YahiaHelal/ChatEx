@@ -1,7 +1,8 @@
-package com.yahia.anotherchatapplicatoin.scenes;
+package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.controllers.LoginSceneController;
-import com.yahia.anotherchatapplicatoin.utils.ui.UiUtils;
+import com.yahia.anotherchatapplicatoin.ui.controllers.LoginSceneController;
+import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
@@ -9,7 +10,7 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
 
-public class LoginScene{
+public class LoginScene extends AbstractLoginScene {
     private TextField usernameTextField;
     private TextField ipAddressTextField;
     private TextField portTextField;
@@ -17,12 +18,10 @@ public class LoginScene{
     private GridPane loginGrid;
     private Scene loginScene;
     private final int WIDTH = 600, HEIGHT = 400;
-    private LoginSceneController controller;
+    private LoginSceneListener loginSceneListener;
 
-    public LoginScene(Stage stage) {
-        initControls();
-        buildUi();
-        initController(stage);
+    public LoginScene() {
+        init();
     }
 
     public String getIpAddress() {
@@ -37,12 +36,16 @@ public class LoginScene{
     public Scene getScene() {
         return loginScene;
     }
-    public Button getLoginButton() {
-        return loginButton;
+
+
+    @Override
+    public void wireController(LoginSceneListener listener, Stage stage) {
+        this.loginSceneListener = listener;
+        setUpActions();
     }
 
-
-    private void initControls() {
+    @Override
+    protected void initControls() {
         usernameTextField = new TextField();
         ipAddressTextField = new TextField();
         portTextField = new TextField();
@@ -54,17 +57,23 @@ public class LoginScene{
         portTextField.setPromptText("Port");
 
     }
-    private void initController(Stage stage) {
-        controller = new LoginSceneController(this, stage);
-    }
-    private void buildUi() {
+
+    @Override
+    protected void buildUi() {
         loginGrid.add(usernameTextField, 0, 0);
         loginGrid.add(ipAddressTextField, 0, 1);
         loginGrid.add(portTextField, 0, 2);
         loginGrid.add(loginButton, 0, 3);
-        UiUtils.setLoginGridSpacing(loginGrid);
+        LayoutUtils.setLoginGridSpacing(loginGrid);
         loginButton.setPrefWidth(75);
         usernameTextField.setPrefWidth(200);
 
+    }
+
+    @Override
+    protected void setUpActions() {
+        loginButton.setOnAction(actionEvent -> {
+            loginSceneListener.onLoginButtonClicked(getUsername(), getIpAddress(), getPort());
+        });
     }
 }

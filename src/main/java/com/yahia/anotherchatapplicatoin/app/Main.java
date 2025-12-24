@@ -2,6 +2,11 @@ package com.yahia.anotherchatapplicatoin.app;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.server.Server;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
 public class Main {
     public static void main(String[] args) {
         //TODO: Auto-discovery of the server on LAN (clients won't need to type the Server's IP)
