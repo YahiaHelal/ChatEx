@@ -2,8 +2,7 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
@@ -19,7 +18,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-public class ChatSceneController implements ChatSceneListener, ServerEventsListener {
+public class ChatSceneController implements ChatSceneListener {
     private final Client client;
     private final TextArea chatArea;
     private final TextField inputField;
@@ -32,7 +31,7 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
         this.chatArea = chatArea;
         this.inputField = inputField;
         this.client = client;
-        initializeMessageListener();
+        initListeners();
     }
 
     public void onMessageReceived(String msg) {
@@ -41,70 +40,41 @@ public class ChatSceneController implements ChatSceneListener, ServerEventsListe
 
     @Override
     public void onSceneShown() {
-        greetClient();
+        client.broadCastSystemMessage(String.format("%s Has Joined The Chat Room, Greet the hell out of em", client.getClientName()));
     }
 
     @Override
     public void onSendButtonClicked() {
         String msg = inputField.getText();
         if(!msg.isBlank()) {
-            sendMessage(msg);
+            client.broadCastUserMessage(msg);
             inputField.clear();
         }
     }
 
     @Override
     public void onWindowClosed() {
-        sendDisconnectRequest();
+        client.requestDisconnect();
         client.closeClientSocket();
-        //TODO: navigate to the login scene
     }
 
     @Override
     public void onUserExit() {
-        sendDisconnectRequest();
-        client.closeClientSocket();
+        client.logout();
         navigator.showLoginScene();
     }
 
-    private void initializeMessageListener() {
-        client.setMessageListener(this::onMessageReceived);
+    private void initListeners() {
+        client.setMessageHandler(this::onMessageReceived);
+        client.setServerEventsListener(this::onServerShutDown);
     }
 
-    //TODO: handle client.sendMessage
 
-    private void sendMessage(String message) {
-        BroadCastMessage broadCastMessage = new BroadCastMessage(client.getClientName(), message);
-        CommunicationPacket broadCastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
-        try {
-            client.sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
-            AlertUtils.createAlert(Alert.AlertType.ERROR, "Message has not been sent", "Failed to connect to server").showAndWait();
-        }
-    }
-    private void greetClient() {
-        BroadCastMessage msg = new BroadCastMessage("SERVER", String.format("%s Has Joined The Chat Room, Greet the hell out of em", client.getClientName()));
-        CommunicationPacket packet = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(msg));
-        try {
-            client.sendMessage(JsonHelper.GSON.toJson(packet));
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
-            AlertUtils.createAlert(Alert.AlertType.ERROR, "Server has been shut down", "Failed to connect to server").showAndWait();
-        }
-    }
-
-    private void sendDisconnectRequest() {
-        String info = JsonHelper.GSON.toJson(new DisconnectRequest(client.getClientName()));
-        try {
-            client.sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
-        }
-    }
-
-    @Override
+    //TODO: ServerClientHandler should have instance of ServerEventListener to call this method when handler shuts down
     public void onServerShutDown() {
-        navigator.showLoginScene();
+        Platform.runLater(() -> {
+            AlertUtils.createAlert(Alert.AlertType.ERROR, "Server has been shut down", "Failed to connect to server").showAndWait();
+            navigator.showLoginScene();
+        });
     }
 }

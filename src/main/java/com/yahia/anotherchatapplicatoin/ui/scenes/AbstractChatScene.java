@@ -1,9 +1,6 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.client.Client;
-import com.yahia.anotherchatapplicatoin.ui.controllers.ChatSceneController;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
 import javafx.stage.Stage;
 
 public abstract class AbstractChatScene {

@@ -1,7 +1,6 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.ui.controllers.LoginSceneController;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import javafx.stage.Stage;
 
 public abstract class AbstractLoginScene {

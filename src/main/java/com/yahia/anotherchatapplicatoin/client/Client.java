@@ -1,7 +1,9 @@
 package com.yahia.anotherchatapplicatoin.client;
 
+import com.yahia.anotherchatapplicatoin.client.exceptions.ClientDisconnectedException;
 import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
+import com.yahia.anotherchatapplicatoin.client.listeners.ServerEventsListener;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
@@ -20,13 +22,8 @@ public class Client extends AbstractClient{
     private String clientName;
     private MessageListener messageListener;
     private HandShakeListener handShakeListener;
-
-    public void setMessageListener(MessageListener messageListener) {
-        this.messageListener = messageListener;
-    }
-    public void setHandShakeListener(HandShakeListener handShakeListener) {
-        this.handShakeListener = handShakeListener;
-    }
+    private ServerEventsListener serverEventsListener;
+    private volatile boolean userFiresDisconnect = false;
 
     //TODO: client fetches the server's old messages when connected
     //TODO: introduce ClientController that implements ClientListener
@@ -35,13 +32,25 @@ public class Client extends AbstractClient{
         startNewClient(serverIp, port);
     }
 
-    public void sendMessage(String message) throws IOException {
-        if(clientSocket.isClosed()) {
-            throw new IOException("Client can't send message while it's closed");
+    public void setMessageHandler(MessageListener messageListener) {
+        this.messageListener = messageListener;
+    }
+
+    public void setHandShakeHandler(HandShakeListener handShakeListener) {
+        this.handShakeListener = handShakeListener;
+    }
+
+    public void setServerEventsListener(ServerEventsListener serverEventsListener) {
+        this.serverEventsListener = serverEventsListener;
+    }
+
+    public void sendMessage(String message) {
+        if(clientSocket == null || clientSocket.isClosed()) {
+            LOGGER.log(Level.SEVERE, String.format("%s tried to send a message through a closed socket ", clientName));
+            return;
         }
         out.println(message);
     }
-
 
     public void setClientName(String name) {
         this.clientName = name;
@@ -60,7 +69,25 @@ public class Client extends AbstractClient{
         }
     }
 
+    public void logout() {
+        userFiresDisconnect = true;
+        requestDisconnect();
+        closeClientSocket();
+    }
 
+    //TODO: show disclaimer to the client before closing the window
+    public void requestDisconnect() {
+        String info = JsonHelper.GSON.toJson(new DisconnectRequest(clientName));
+        sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
+    }
+
+    public void broadCastUserMessage(String text) {
+        broadCastInternal(clientName, text);
+    }
+
+    public void broadCastSystemMessage(String text) {
+        broadCastInternal("SERVER", text);
+    }
 
     @Override
     protected void initMessengers(){
@@ -74,16 +101,15 @@ public class Client extends AbstractClient{
 
     }
 
-
     @Override
     protected void connect(String serverIp, int serverPort) throws IOException {
         clientSocket = new Socket(serverIp, serverPort);
     }
+
     @Override
     protected void startListener() {
-        new Thread(this::listen).start();
+        new Thread(this::listen, "client-listener-thread").start();
     }
-
 
     private void listen() {
         String msg;
@@ -99,16 +125,30 @@ public class Client extends AbstractClient{
             }
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
+        }finally {
+            notifyServerEventListener();
         }
+
     }
 
     private void handleHandShakeResponse(CommunicationPacket packet) {
         HandShakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandShakeResponse.class);
-
         if(handShakeResponse.status() != ConnectionStatus.ACCEPT) {
             closeClientSocket();
         }
         notifyHandShakeListener(handShakeResponse.status());
+    }
+
+    private void handleBroadCastMessage(CommunicationPacket packet) {
+        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
+        notifyMessageListener(broadCastMessage);
+    }
+
+    private void notifyServerEventListener() {
+        if(serverEventsListener != null && !userFiresDisconnect) {
+            LOGGER.log(Level.INFO, "notifying the server shutting down");
+            serverEventsListener.onServerShutDown();
+        }
     }
 
     private void notifyHandShakeListener(ConnectionStatus status) {
@@ -123,11 +163,11 @@ public class Client extends AbstractClient{
         }
     }
 
-    private void handleBroadCastMessage(CommunicationPacket packet) {
-        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
-        notifyMessageListener(broadCastMessage);
+    private void broadCastInternal(String sender, String text) {
+        BroadCastMessage broadCastMessage = new BroadCastMessage(sender, text);
+        CommunicationPacket broadCastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
+        sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
     }
-
 
     private String prefixName(String name, String message) {
         return String.format("[%s]: %s", name, message);
