@@ -26,4 +26,6 @@ module org.example.anotherchatapplicatoin {
     opens com.yahia.anotherchatapplicatoin.utils.logging to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.utils.network;
     opens com.yahia.anotherchatapplicatoin.utils.network to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.client.exceptions;
+    opens com.yahia.anotherchatapplicatoin.client.exceptions;
 }

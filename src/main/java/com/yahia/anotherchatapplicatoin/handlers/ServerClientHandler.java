@@ -3,6 +3,7 @@ package com.yahia.anotherchatapplicatoin.handlers;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.server.Server;
+import com.yahia.anotherchatapplicatoin.utils.network.SocketUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class ServerClientHandler implements Runnable {
     public void sendMessageToClient(CommunicationPacket packet) {
         CommunicationPacket broadBastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, packet.payload());
         out.println(JsonHelper.GSON.toJson(broadBastPacket));
-        LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", CLIENT_SOCKET.getInetAddress().getHostAddress()));
+        LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", SocketUtils.getSocketAddress(CLIENT_SOCKET)));
     }
 
 
@@ -44,6 +45,7 @@ public class ServerClientHandler implements Runnable {
         CHAT_SERVER.broadCastPacket(packet);
     };
 
+    //TODO: private messages between friends only
     private void handlePrivateMessage(CommunicationPacket packet) {
 
     }

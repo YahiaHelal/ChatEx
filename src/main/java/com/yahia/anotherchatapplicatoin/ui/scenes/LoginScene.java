@@ -1,7 +1,6 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.ui.controllers.LoginSceneController;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -72,6 +71,7 @@ public class LoginScene extends AbstractLoginScene {
 
     @Override
     protected void setUpActions() {
+        //TODO: getPort() throws an exception when empty port
         loginButton.setOnAction(actionEvent -> {
             loginSceneListener.onLoginButtonClicked(getUsername(), getIpAddress(), getPort());
         });

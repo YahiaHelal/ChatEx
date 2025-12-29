@@ -1,10 +1,6 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.client.Client;
-import com.yahia.anotherchatapplicatoin.protocol.MessageType;
-import com.yahia.anotherchatapplicatoin.ui.controllers.ChatSceneController;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ChatSceneListener;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.ServerEventsListener;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -26,7 +22,6 @@ public class ChatScene extends AbstractChatScene{
     private HBox bottomBar;
     private HBox topBar;
     private ChatSceneListener chatSceneListener;
-    private ServerEventsListener serverEventsListener;
     private final int WIDTH = 880, HEIGHT = 550;
 
 
@@ -61,8 +56,6 @@ public class ChatScene extends AbstractChatScene{
         logoutButton.setOnAction(actionEvent -> {
             chatSceneListener.onUserExit();
         });
-
-        //TODO: onServerShutDown()
     }
 
 

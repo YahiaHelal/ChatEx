@@ -2,20 +2,14 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 
 import com.yahia.anotherchatapplicatoin.client.Client;
-import com.yahia.anotherchatapplicatoin.ui.controllers.listeners.LoginSceneListener;
-import com.yahia.anotherchatapplicatoin.ui.managers.DefaultSceneFactory;
-import com.yahia.anotherchatapplicatoin.ui.managers.SceneFactory;
-import com.yahia.anotherchatapplicatoin.ui.managers.SceneManager;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
-import com.yahia.anotherchatapplicatoin.ui.scenes.LoginScene;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
-import com.yahia.anotherchatapplicatoin.ui.scenes.ChatScene;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
-import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -32,7 +26,7 @@ public class LoginSceneController implements LoginSceneListener {
 
 
     private void initializeHandShakeListener() {
-        client.setHandShakeListener(this::onHandShakeStatusReceived);
+        client.setHandShakeHandler(this::onHandShakeStatusReceived);
     }
     private void onHandShakeStatusReceived(ConnectionStatus status) {
         Platform.runLater(() -> {
@@ -48,11 +42,7 @@ public class LoginSceneController implements LoginSceneListener {
     private void sendHandShake() {
         String username = JsonHelper.GSON.toJson(new HandShakeRequest(client.getClientName()));
         CommunicationPacket handShakePacket = new CommunicationPacket(MessageType.HANDSHAKE_REQUEST, username);
-        try {
-            client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
-        }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
-        }
+        client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
     }
 
     @Override

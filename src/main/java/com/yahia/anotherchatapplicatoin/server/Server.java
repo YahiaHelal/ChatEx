@@ -87,8 +87,31 @@ public class Server {
         return ConnectionStatus.ACCEPT;
     }
 
-    private void fireNewHandler() {
+    private void handleClient(Socket clientSocket) throws IOException {
+        BufferedReader tempIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        PrintWriter tempOut = new PrintWriter(clientSocket.getOutputStream(), true);
 
+        // receives the Header first
+        CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
+        switch(clientSentPacket.type()) {
+            case HANDSHAKE_REQUEST -> {
+                HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandShakeRequest.class);
+                ConnectionStatus connectionStatus = handleHandShake(handShakeRequest);
+                String response = JsonHelper.GSON.toJson(new HandShakeResponse(connectionStatus));
+                CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, response);
+
+                tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
+
+                if(connectionStatus == ConnectionStatus.ACCEPT) {
+                    ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, handShakeRequest.username());
+                    CLIENTS.add(clientHandler);
+                    LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+                    new Thread(clientHandler).start();
+                }
+            }
+            default -> LOGGER.log(Level.SEVERE, "UNKNOWN HEADER");
+
+        }
     }
 
     private void listen(){
@@ -96,32 +119,7 @@ public class Server {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
-                    BufferedReader tempIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                    PrintWriter tempOut = new PrintWriter(clientSocket.getOutputStream(), true);
-
-                    // receives the Header first
-                    CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
-                    switch(clientSentPacket.type()) {
-                        case HANDSHAKE_REQUEST -> {
-                            HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandShakeRequest.class);
-                            ConnectionStatus connectionStatus = handleHandShake(handShakeRequest);
-                            String response = JsonHelper.GSON.toJson(new HandShakeResponse(connectionStatus));
-                            CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, response);
-
-                            tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
-
-                            if(connectionStatus == ConnectionStatus.ACCEPT) {
-                                ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, handShakeRequest.username());
-                                CLIENTS.add(clientHandler);
-                                LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-                                new Thread(clientHandler).start();
-                            }
-                        }
-                        default -> {
-                            LOGGER.log(Level.SEVERE, "UNKNOWN HEADER");
-                        }
-
-                    }
+                    handleClient(clientSocket);
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
                 }
