@@ -23,7 +23,7 @@ public class Client extends AbstractClient{
     private MessageListener messageListener;
     private HandShakeListener handShakeListener;
     private ServerEventsListener serverEventsListener;
-    private volatile boolean userFiresDisconnect = false;
+    private volatile DisconnectReason disconnectReason;
 
     //TODO: client fetches the server's old messages when connected
     //TODO: introduce ClientController that implements ClientListener
@@ -60,7 +60,7 @@ public class Client extends AbstractClient{
         return clientName;
     }
 
-    public void closeClientSocket() {
+    private void closeClientSocket() {
         try {
             LOGGER.log(Level.INFO, "Closing client socket");
             clientSocket.close();
@@ -69,16 +69,16 @@ public class Client extends AbstractClient{
         }
     }
 
-    public void logout() {
-        userFiresDisconnect = true;
+    public void disconnect() {
         requestDisconnect();
         closeClientSocket();
     }
 
     //TODO: show disclaimer to the client before closing the window
-    public void requestDisconnect() {
+    private void requestDisconnect() {
         String info = JsonHelper.GSON.toJson(new DisconnectRequest(clientName));
         sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
+
     }
 
     public void broadCastUserMessage(String text) {
@@ -126,14 +126,20 @@ public class Client extends AbstractClient{
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
         }finally {
-            notifyServerEventListener();
+            setDisconnectReason(DisconnectReason.SERVER_SHUTDOWN);
+            notifyDisconnect(disconnectReason);
         }
 
     }
 
+    //TODO: isn't it a bit dangerous ? everyone can set the disconnection reason
+    public void setDisconnectReason(DisconnectReason reason) {
+        if(disconnectReason == null) disconnectReason = reason;
+    }
     private void handleHandShakeResponse(CommunicationPacket packet) {
         HandShakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandShakeResponse.class);
         if(handShakeResponse.status() != ConnectionStatus.ACCEPT) {
+            setDisconnectReason(DisconnectReason.HANDSHAKE_FAILED);
             closeClientSocket();
         }
         notifyHandShakeListener(handShakeResponse.status());
@@ -144,10 +150,10 @@ public class Client extends AbstractClient{
         notifyMessageListener(broadCastMessage);
     }
 
-    private void notifyServerEventListener() {
-        if(serverEventsListener != null && !userFiresDisconnect) {
-            LOGGER.log(Level.INFO, "notifying the server shutting down");
-            serverEventsListener.onServerShutDown();
+    private void notifyDisconnect(DisconnectReason reason) {
+        if(serverEventsListener != null) {
+            LOGGER.log(Level.INFO, String.format("notifying the server for event %s", reason));
+            serverEventsListener.onDisconnect(reason);
         }
     }
 
