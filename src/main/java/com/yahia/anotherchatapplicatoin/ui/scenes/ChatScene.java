@@ -1,15 +1,18 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
+import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.util.Optional;
 
 
 public class ChatScene extends AbstractChatScene{
@@ -49,12 +52,21 @@ public class ChatScene extends AbstractChatScene{
             chatSceneListener.onSendButtonClicked();
         });
 
+
         stage.setOnCloseRequest(windowEvent -> {
-            chatSceneListener.onWindowClosed();
+            Optional<ButtonType> result = AlertUtils.confirm("Are you sure you want to quit ?", "Exit").showAndWait();
+            if(result.isPresent() && result.get() == ButtonType.OK){
+                chatSceneListener.onWindowClosed();
+            }else {
+                windowEvent.consume();
+            }
         });
 
         logoutButton.setOnAction(actionEvent -> {
-            chatSceneListener.onUserExit();
+            Optional<ButtonType> result =  AlertUtils.confirm("Are you sure you want to logout ?", "Logout").showAndWait();
+            if(result.isPresent() && result.get() == ButtonType.OK) {
+                chatSceneListener.onUserExit();
+            }
         });
     }
 

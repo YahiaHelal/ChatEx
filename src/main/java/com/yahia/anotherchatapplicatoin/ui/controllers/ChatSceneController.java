@@ -10,10 +10,13 @@ import com.yahia.anotherchatapplicatoin.protocol.*;
 import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
+import javax.swing.text.html.Option;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -54,27 +57,38 @@ public class ChatSceneController implements ChatSceneListener {
 
     @Override
     public void onWindowClosed() {
-        client.requestDisconnect();
-        client.closeClientSocket();
+        client.setDisconnectReason(DisconnectReason.WINDOW_CLOSED);
+        client.disconnect();
+
     }
 
     @Override
     public void onUserExit() {
-        client.logout();
-        navigator.showLoginScene();
+        client.setDisconnectReason(DisconnectReason.USER_LOGOUT);
+        client.disconnect();
     }
 
     private void initListeners() {
         client.setMessageHandler(this::onMessageReceived);
-        client.setServerEventsListener(this::onServerShutDown);
+        client.setServerEventsListener(this::onDisconnect);
     }
 
 
-    //TODO: ServerClientHandler should have instance of ServerEventListener to call this method when handler shuts down
-    public void onServerShutDown() {
+    //TODO: a better way ?
+    public void onDisconnect(DisconnectReason reason) {
         Platform.runLater(() -> {
-            AlertUtils.createAlert(Alert.AlertType.ERROR, "Server has been shut down", "Failed to connect to server").showAndWait();
-            navigator.showLoginScene();
+            switch (reason) {
+                case SERVER_SHUTDOWN -> {
+                    AlertUtils.error("Server has been shut down", "Failed to connect to server").showAndWait();
+                    navigator.showLoginScene();
+                }
+                case USER_LOGOUT -> {
+                    navigator.showLoginScene();
+                }
+                case WINDOW_CLOSED, HANDSHAKE_FAILED -> {
+                    // left blank in purpose
+                }
+            }
         });
     }
 }

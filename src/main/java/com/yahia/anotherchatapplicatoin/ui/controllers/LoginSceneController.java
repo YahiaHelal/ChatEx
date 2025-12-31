@@ -31,10 +31,10 @@ public class LoginSceneController implements LoginSceneListener {
     private void onHandShakeStatusReceived(ConnectionStatus status) {
         Platform.runLater(() -> {
             if(status == ConnectionStatus.ACCEPT) {
-                AlertUtils.createAlert(Alert.AlertType.INFORMATION, "Logged In", status.message()).showAndWait();
+                AlertUtils.info("Logged In", status.message()).showAndWait();
                 navigator.showChatScene(client);
             }else {
-                AlertUtils.createAlert(Alert.AlertType.WARNING, "Login Failed", status.message()).showAndWait();
+                AlertUtils.warn("Login Failed", status.message()).showAndWait();
             }
         });
     }
@@ -53,7 +53,7 @@ public class LoginSceneController implements LoginSceneListener {
             sendHandShake();
         }catch(IOException e) {
             LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s:%d", username, ipAddress, port));
-            AlertUtils.createAlert(Alert.AlertType.WARNING, String.format("there is no running server at %s:%d", ipAddress, port), "Login Failed").showAndWait();
+            AlertUtils.warn(String.format("there is no running server at %s:%d", ipAddress, port), "Login Failed").showAndWait();
         }
     }
 }

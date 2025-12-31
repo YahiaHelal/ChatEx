@@ -21,7 +21,7 @@ public class Main {
 //        CommunicationPacket recPacket = JsonHelper.GSON.fromJson(JsonHelper.GSON.toJson(sentPacket), CommunicationPacket.class);
 //        HandShakeRequest req = JsonHelper.GSON.fromJson(recPacket.payload(), HandShakeRequest.class);
 //        System.out.println(req.username());
-        Server chatServer = new Server(8080);
+        Server chatServer = new Server(8082);
         chatServer.start();
     }
 }
