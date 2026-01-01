@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.protocol;
+package com.yahia.anotherchatapplicatoin.protocol.json;
 
 import com.google.gson.Gson;
 

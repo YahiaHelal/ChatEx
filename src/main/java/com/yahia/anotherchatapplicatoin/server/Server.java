@@ -1,10 +1,14 @@
 package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
+import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
+import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
+import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
-import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.protocol.HandShakeRequest;
-import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeRequest;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeResponse;
 import com.yahia.anotherchatapplicatoin.utils.network.SocketUtils;
 
 import java.io.BufferedReader;
@@ -67,7 +71,7 @@ public class Server {
         CLIENT_NAMES.remove(clientUsername);
         LOGGER.log(Level.INFO, String.format("%s has disconnected", clientUsername));
         String info = JsonHelper.GSON.toJson(new BroadCastMessage("SERVER", String.format("%s has been disconnected", clientUsername)));
-        broadCastPacket(new CommunicationPacket(MessageType.BROADCAST_MESSAGE, info));
+        broadCastPacket(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, info));
     }
 
 
@@ -78,7 +82,7 @@ public class Server {
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", SocketUtils.getServerSocketAddress(serverSocket), SERVER_PORT));
     }
 
-    private ConnectionStatus handleHandShake(HandShakeRequest handShakeRequest) {
+    private ConnectionStatus handleHandShake(HandshakeRequest handShakeRequest) {
         LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
         if(CLIENT_NAMES.contains(handShakeRequest.username())) {
             return ConnectionStatus.REJECT_USERNAME_TAKEN;
@@ -95,10 +99,10 @@ public class Server {
         CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
         switch(clientSentPacket.type()) {
             case HANDSHAKE_REQUEST -> {
-                HandShakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandShakeRequest.class);
+                HandshakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandshakeRequest.class);
                 ConnectionStatus connectionStatus = handleHandShake(handShakeRequest);
-                String response = JsonHelper.GSON.toJson(new HandShakeResponse(connectionStatus));
-                CommunicationPacket handShakeResponsePacket = new CommunicationPacket(MessageType.HANDSHAKE_RESPONSE, response);
+                String response = JsonHelper.GSON.toJson(new HandshakeResponse(connectionStatus));
+                CommunicationPacket handShakeResponsePacket = new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response);
 
                 tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
 

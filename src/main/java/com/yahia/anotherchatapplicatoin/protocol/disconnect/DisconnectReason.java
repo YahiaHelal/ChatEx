@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.protocol;
+package com.yahia.anotherchatapplicatoin.protocol.disconnect;
 
 public enum DisconnectReason {
     USER_LOGOUT,

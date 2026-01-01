@@ -2,22 +2,15 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 
+import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
-import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
 import javafx.application.Platform;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
-import javax.swing.text.html.Option;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -57,15 +50,12 @@ public class ChatSceneController implements ChatSceneListener {
 
     @Override
     public void onWindowClosed() {
-        client.setDisconnectReason(DisconnectReason.WINDOW_CLOSED);
-        client.disconnect();
-
+        client.disconnect(DisconnectReason.WINDOW_CLOSED);
     }
 
     @Override
     public void onUserExit() {
-        client.setDisconnectReason(DisconnectReason.USER_LOGOUT);
-        client.disconnect();
+        client.disconnect(DisconnectReason.USER_LOGOUT);
     }
 
     private void initListeners() {

@@ -1,13 +1,18 @@
 package com.yahia.anotherchatapplicatoin.client;
 
-import com.yahia.anotherchatapplicatoin.client.exceptions.ClientDisconnectedException;
-import com.yahia.anotherchatapplicatoin.client.listeners.HandShakeListener;
+import com.yahia.anotherchatapplicatoin.client.listeners.HandshakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
-import com.yahia.anotherchatapplicatoin.client.listeners.ServerEventsListener;
+import com.yahia.anotherchatapplicatoin.client.listeners.DisconnectListener;
+import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
+import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
+import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
+import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
+import com.yahia.anotherchatapplicatoin.protocol.packet.PacketHandlerRegistry;
+import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
-import com.yahia.anotherchatapplicatoin.protocol.*;
-import com.yahia.anotherchatapplicatoin.protocol.HandShakeResponse;
-import com.yahia.anotherchatapplicatoin.protocol.BroadCastMessage;
+import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeResponse;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
 
 import java.io.*;
 import java.net.Socket;
@@ -21,14 +26,15 @@ public class Client extends AbstractClient{
     private Socket clientSocket;
     private String clientName;
     private MessageListener messageListener;
-    private HandShakeListener handShakeListener;
-    private ServerEventsListener serverEventsListener;
+    private HandshakeListener handShakeListener;
+    private DisconnectListener serverEventsListener;
     private volatile DisconnectReason disconnectReason;
+    private final PacketHandlerRegistry handlerRegistry;
 
     //TODO: client fetches the server's old messages when connected
-    //TODO: introduce ClientController that implements ClientListener
     public Client(String clientName, String serverIp, int port) throws IOException {
         this.clientName = clientName;
+        handlerRegistry = new PacketHandlerRegistry();
         startNewClient(serverIp, port);
     }
 
@@ -36,11 +42,11 @@ public class Client extends AbstractClient{
         this.messageListener = messageListener;
     }
 
-    public void setHandShakeHandler(HandShakeListener handShakeListener) {
+    public void setHandShakeHandler(HandshakeListener handShakeListener) {
         this.handShakeListener = handShakeListener;
     }
 
-    public void setServerEventsListener(ServerEventsListener serverEventsListener) {
+    public void setServerEventsListener(DisconnectListener serverEventsListener) {
         this.serverEventsListener = serverEventsListener;
     }
 
@@ -69,17 +75,15 @@ public class Client extends AbstractClient{
         }
     }
 
-    public void disconnect() {
-        requestDisconnect();
+    public void disconnect(DisconnectReason reason) {
+        setDisconnectReason(reason);
+        if(reason != DisconnectReason.SERVER_SHUTDOWN && reason != DisconnectReason.HANDSHAKE_FAILED) {
+            requestDisconnect();
+        }
         closeClientSocket();
     }
 
-    //TODO: show disclaimer to the client before closing the window
-    private void requestDisconnect() {
-        String info = JsonHelper.GSON.toJson(new DisconnectRequest(clientName));
-        sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(MessageType.DISCONNECT_REQUEST, info)));
 
-    }
 
     public void broadCastUserMessage(String text) {
         broadCastInternal(clientName, text);
@@ -111,37 +115,40 @@ public class Client extends AbstractClient{
         new Thread(this::listen, "client-listener-thread").start();
     }
 
+    @Override
+    protected void registerHandlers() {
+        handlerRegistry.register(PacketType.HANDSHAKE_RESPONSE, this::handleHandShakeResponse);
+        handlerRegistry.register(PacketType.BROADCAST_MESSAGE, this::handleBroadCastMessage);
+    }
+
     private void listen() {
         String msg;
         try {
             while((msg = in.readLine()) != null) {
-                LOGGER.log(Level.INFO, String.format("Message sent to client : %s", msg));
+                LOGGER.log(Level.INFO, String.format("Message: %s sent to client %s", msg, clientName));
                 CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
-                //TODO: apply OCP later
-                switch (serverSentPacket.type()) {
-                    case HANDSHAKE_RESPONSE -> handleHandShakeResponse(serverSentPacket);
-                    case BROADCAST_MESSAGE -> handleBroadCastMessage(serverSentPacket);
-                }
+                handlerRegistry.get(serverSentPacket.type()).handlePacket(serverSentPacket);
             }
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
         }finally {
-            setDisconnectReason(DisconnectReason.SERVER_SHUTDOWN);
-            notifyDisconnect(disconnectReason);
+            disconnect(DisconnectReason.SERVER_SHUTDOWN);
+            notifyDisconnectListener(disconnectReason);
         }
 
     }
 
-    //TODO: isn't it a bit dangerous ? everyone can set the disconnection reason
-    public void setDisconnectReason(DisconnectReason reason) {
+    private void setDisconnectReason(DisconnectReason reason) {
         if(disconnectReason == null) disconnectReason = reason;
     }
+
+    private void requestDisconnect() {
+        String info = JsonHelper.GSON.toJson(new DisconnectRequest(clientName));
+        sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(PacketType.DISCONNECT_REQUEST, info)));
+    }
+
     private void handleHandShakeResponse(CommunicationPacket packet) {
-        HandShakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandShakeResponse.class);
-        if(handShakeResponse.status() != ConnectionStatus.ACCEPT) {
-            setDisconnectReason(DisconnectReason.HANDSHAKE_FAILED);
-            closeClientSocket();
-        }
+        HandshakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandshakeResponse.class);
         notifyHandShakeListener(handShakeResponse.status());
     }
 
@@ -150,9 +157,8 @@ public class Client extends AbstractClient{
         notifyMessageListener(broadCastMessage);
     }
 
-    private void notifyDisconnect(DisconnectReason reason) {
+    private void notifyDisconnectListener(DisconnectReason reason) {
         if(serverEventsListener != null) {
-            LOGGER.log(Level.INFO, String.format("notifying the server for event %s", reason));
             serverEventsListener.onDisconnect(reason);
         }
     }
@@ -171,7 +177,7 @@ public class Client extends AbstractClient{
 
     private void broadCastInternal(String sender, String text) {
         BroadCastMessage broadCastMessage = new BroadCastMessage(sender, text);
-        CommunicationPacket broadCastPacket = new CommunicationPacket(MessageType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
+        CommunicationPacket broadCastPacket = new CommunicationPacket(PacketType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
         sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
     }
 

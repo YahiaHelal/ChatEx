@@ -1,6 +1,6 @@
-package com.yahia.anotherchatapplicatoin.protocol;
+package com.yahia.anotherchatapplicatoin.protocol.packet;
 
-public enum MessageType {
+public enum PacketType {
     HANDSHAKE_REQUEST,
     HANDSHAKE_RESPONSE,
 
