@@ -20,12 +20,22 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.anotherchatapplicatoin.utils.ui;
     opens com.yahia.anotherchatapplicatoin.client.listeners to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.client.listeners;
-    exports com.yahia.anotherchatapplicatoin.protocol;
-    opens com.yahia.anotherchatapplicatoin.protocol to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.utils.logging;
     opens com.yahia.anotherchatapplicatoin.utils.logging to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.utils.network;
     opens com.yahia.anotherchatapplicatoin.utils.network to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.client.exceptions;
     opens com.yahia.anotherchatapplicatoin.client.exceptions;
+    exports com.yahia.anotherchatapplicatoin.protocol.packet;
+    opens com.yahia.anotherchatapplicatoin.protocol.packet to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.messaging;
+    opens com.yahia.anotherchatapplicatoin.protocol.messaging to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.disconnect;
+    opens com.yahia.anotherchatapplicatoin.protocol.disconnect to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.server;
+    opens com.yahia.anotherchatapplicatoin.protocol.server to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.handshake;
+    opens com.yahia.anotherchatapplicatoin.protocol.handshake to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.protocol.json;
+    opens com.yahia.anotherchatapplicatoin.protocol.json to javafx.fxml;
 }

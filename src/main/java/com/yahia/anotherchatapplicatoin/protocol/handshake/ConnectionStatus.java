@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.protocol;
+package com.yahia.anotherchatapplicatoin.protocol.handshake;
 
 public enum ConnectionStatus {
     ACCEPT("Welcome to Chat Room!"),

@@ -1,11 +1,11 @@
 package com.yahia.anotherchatapplicatoin.client.listeners;
 
 
-import com.yahia.anotherchatapplicatoin.protocol.DisconnectReason;
+import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 
 //NOTE: is an interface holding only one abstract method, like Runnable, more methods give compiler errors
 //TODO: better naming, its only one event
 @FunctionalInterface
-public interface ServerEventsListener {
+public interface DisconnectListener {
     void onDisconnect(DisconnectReason reason);
 }

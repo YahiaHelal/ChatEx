@@ -1,7 +1,7 @@
-package com.yahia.anotherchatapplicatoin.protocol;
+package com.yahia.anotherchatapplicatoin.protocol.packet;
 
 //TODO: make generic <T>
 public record CommunicationPacket(
-        MessageType type,
+        PacketType type,
         String payload
 ) {}
