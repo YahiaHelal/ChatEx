@@ -1,6 +1,7 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
+import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -26,8 +27,8 @@ public class LoginScene extends AbstractLoginScene {
     public String getIpAddress() {
         return ipAddressTextField.getText();
     }
-    public int getPort() throws NumberFormatException{
-        return Integer.parseInt(portTextField.getText());
+    public String getPort(){
+        return portTextField.getText();
     }
     public String getUsername() {
         return usernameTextField.getText();
@@ -70,8 +71,8 @@ public class LoginScene extends AbstractLoginScene {
     }
 
     @Override
-    protected void setUpActions() {
-        //TODO: getPort() throws an exception when empty port
+    protected void setUpActions() throws NumberFormatException {
+        //BUG: getPort() throws an exception when empty port
         loginButton.setOnAction(actionEvent -> {
             loginSceneListener.onLoginButtonClicked(getUsername(), getIpAddress(), getPort());
         });
