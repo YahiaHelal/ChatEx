@@ -1,11 +1,17 @@
 package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
+import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
+import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeRequest;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeResponse;
@@ -29,7 +35,6 @@ public class Server {
     private final Set<String> CLIENT_NAMES;
     private final Logger LOGGER;
     private ServerSocket serverSocket;
-
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
@@ -92,19 +97,17 @@ public class Server {
     }
 
     private void handleClient(Socket clientSocket) throws IOException {
-        BufferedReader tempIn = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        PrintWriter tempOut = new PrintWriter(clientSocket.getOutputStream(), true);
-
-        // receives the Header first
-        CommunicationPacket clientSentPacket = JsonHelper.GSON.fromJson(tempIn.readLine(), CommunicationPacket.class);
+        MessageSender sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
+        MessageReceiver receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
+        var clientSentPacket = receiver.receive();
+        System.out.println(clientSentPacket);
         switch(clientSentPacket.type()) {
             case HANDSHAKE_REQUEST -> {
                 HandshakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandshakeRequest.class);
                 ConnectionStatus connectionStatus = handleHandShake(handShakeRequest);
                 String response = JsonHelper.GSON.toJson(new HandshakeResponse(connectionStatus));
-                CommunicationPacket handShakeResponsePacket = new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response);
 
-                tempOut.println(JsonHelper.GSON.toJson(handShakeResponsePacket));
+                sender.send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
 
                 if(connectionStatus == ConnectionStatus.ACCEPT) {
                     ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, handShakeRequest.username());

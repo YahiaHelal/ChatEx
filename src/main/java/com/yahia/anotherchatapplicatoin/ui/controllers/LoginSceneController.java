@@ -42,11 +42,9 @@ public class LoginSceneController implements LoginSceneListener {
             }
         });
     }
-    //TODO: handle send message
     private void sendHandShake() {
         String username = JsonHelper.GSON.toJson(new HandshakeRequest(client.getClientName()));
-        CommunicationPacket handShakePacket = new CommunicationPacket(PacketType.HANDSHAKE_REQUEST, username);
-        client.sendMessage(JsonHelper.GSON.toJson(handShakePacket));
+        client.sendMessage(new CommunicationPacket(PacketType.HANDSHAKE_REQUEST, username));
     }
 
     @Override

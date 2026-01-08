@@ -3,13 +3,19 @@ package com.yahia.anotherchatapplicatoin.client;
 import com.yahia.anotherchatapplicatoin.client.listeners.HandshakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.DisconnectListener;
+import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
+import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeResponse;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
@@ -21,8 +27,6 @@ import java.util.logging.Logger;
 
 public class Client extends AbstractClient{
     private final Logger LOGGER = LogManager.getLogger();
-    private BufferedReader in;
-    private PrintWriter out;
     private Socket clientSocket;
     private String clientName;
     private MessageListener messageListener;
@@ -30,7 +34,8 @@ public class Client extends AbstractClient{
     private DisconnectListener serverEventsListener;
     private volatile DisconnectReason disconnectReason;
     private final PacketHandlerRegistry handlerRegistry;
-
+    private MessageSender sender;
+    private MessageReceiver receiver;
     //TODO: client fetches the server's old messages when connected
     public Client(String clientName, String serverIp, int port) throws IOException {
         this.clientName = clientName;
@@ -50,12 +55,12 @@ public class Client extends AbstractClient{
         this.serverEventsListener = serverEventsListener;
     }
 
-    public void sendMessage(String message) {
+    public void sendMessage(CommunicationPacket packet) {
         if(clientSocket == null || clientSocket.isClosed()) {
             LOGGER.log(Level.SEVERE, String.format("%s tried to send a message through a closed socket ", clientName));
             return;
         }
-        out.println(message);
+        sender.send(packet);
     }
 
     public void setClientName(String name) {
@@ -96,8 +101,8 @@ public class Client extends AbstractClient{
     @Override
     protected void initMessengers(){
         try {
-            in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            out = new PrintWriter(clientSocket.getOutputStream(), true);
+            sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
+            receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
             LOGGER.log(Level.INFO, "Messengers initialized");
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Error while initializing messengers");
@@ -122,16 +127,16 @@ public class Client extends AbstractClient{
     }
 
     private void listen() {
-        String msg;
+        CommunicationPacket packet;
         try {
-            while((msg = in.readLine()) != null) {
-                LOGGER.log(Level.INFO, String.format("Message: %s sent to client %s", msg, clientName));
-                CommunicationPacket serverSentPacket = JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
-                handlerRegistry.get(serverSentPacket.type()).handlePacket(serverSentPacket);
+            while((packet = receiver.receive()) != null) {
+                LOGGER.log(Level.INFO, String.format("Message: %s sent to client %s", packet, clientName));
+                handlerRegistry.get(packet.type()).handlePacket(packet);
             }
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Socket between client and server is closed");
+            LOGGER.log(Level.SEVERE, "Client socket has been closed");
         }finally {
+            LOGGER.log(Level.SEVERE, "Server dies");
             disconnect(DisconnectReason.SERVER_SHUTDOWN);
             notifyDisconnectListener(disconnectReason);
         }
@@ -144,7 +149,7 @@ public class Client extends AbstractClient{
 
     private void requestDisconnect() {
         String info = JsonHelper.GSON.toJson(new DisconnectRequest(clientName));
-        sendMessage(JsonHelper.GSON.toJson(new CommunicationPacket(PacketType.DISCONNECT_REQUEST, info)));
+        sendMessage(new CommunicationPacket(PacketType.DISCONNECT_REQUEST, info));
     }
 
     private void handleHandShakeResponse(CommunicationPacket packet) {
@@ -177,8 +182,7 @@ public class Client extends AbstractClient{
 
     private void broadCastInternal(String sender, String text) {
         BroadCastMessage broadCastMessage = new BroadCastMessage(sender, text);
-        CommunicationPacket broadCastPacket = new CommunicationPacket(PacketType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage));
-        sendMessage(JsonHelper.GSON.toJson(broadCastPacket));
+        sendMessage(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage)));
     }
 
     private String prefixName(String name, String message) {
