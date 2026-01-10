@@ -9,6 +9,7 @@ import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
+import com.yahia.anotherchatapplicatoin.protocol.packet.PacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
@@ -35,6 +36,11 @@ public class Server {
     private final Set<String> CLIENT_NAMES;
     private final Logger LOGGER;
     private ServerSocket serverSocket;
+    private final PacketHandlerRegistry handlerRegistry;
+    private Socket clientSocket; // NOTE: overwritten with each new connection
+    private MessageSender sender; //NOTE: overwritten with each new connection
+    private MessageReceiver receiver; //NOTE: overwritten with each new connection
+
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
@@ -44,6 +50,9 @@ public class Server {
         CLIENTS = ConcurrentHashMap.newKeySet();
         CLIENT_NAMES = ConcurrentHashMap.newKeySet();
         LOGGER = LogManager.getLogger();
+
+        handlerRegistry = new PacketHandlerRegistry();
+        registerHandlers();
     }
 
     public void start() {
@@ -80,6 +89,9 @@ public class Server {
     }
 
 
+    private void registerHandlers() {
+        handlerRegistry.register(PacketType.HANDSHAKE_REQUEST, this::handleHandshakeRequest);
+    }
 
 
     private void run() throws IOException {
@@ -87,8 +99,7 @@ public class Server {
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", SocketUtils.getServerSocketAddress(serverSocket), SERVER_PORT));
     }
 
-    private ConnectionStatus handleHandShake(HandshakeRequest handShakeRequest) {
-        LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
+    private ConnectionStatus checkStatus(HandshakeRequest handShakeRequest) {
         if(CLIENT_NAMES.contains(handShakeRequest.username())) {
             return ConnectionStatus.REJECT_USERNAME_TAKEN;
         }
@@ -96,36 +107,34 @@ public class Server {
         return ConnectionStatus.ACCEPT;
     }
 
-    private void handleClient(Socket clientSocket) throws IOException {
-        MessageSender sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
-        MessageReceiver receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
-        var clientSentPacket = receiver.receive();
-        System.out.println(clientSentPacket);
-        switch(clientSentPacket.type()) {
-            case HANDSHAKE_REQUEST -> {
-                HandshakeRequest handShakeRequest = JsonHelper.GSON.fromJson(clientSentPacket.payload(), HandshakeRequest.class);
-                ConnectionStatus connectionStatus = handleHandShake(handShakeRequest);
-                String response = JsonHelper.GSON.toJson(new HandshakeResponse(connectionStatus));
+    private void handleHandshakeRequest(CommunicationPacket packet) throws IOException {
+        LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
+        HandshakeRequest request = JsonHelper.GSON.fromJson(packet.payload(), HandshakeRequest.class);
+        ConnectionStatus status = checkStatus(request);
+        String response = JsonHelper.GSON.toJson(new HandshakeResponse(status));
 
-                sender.send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
+        sender.send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
 
-                if(connectionStatus == ConnectionStatus.ACCEPT) {
-                    ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, handShakeRequest.username());
-                    CLIENTS.add(clientHandler);
-                    LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-                    new Thread(clientHandler).start();
-                }
-            }
-            default -> LOGGER.log(Level.SEVERE, "UNKNOWN HEADER");
-
+        if(status == ConnectionStatus.ACCEPT) {
+            ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, request.username());
+            CLIENTS.add(clientHandler);
+            LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+            new Thread(clientHandler).start();
         }
+    }
+
+    private void handleClient(Socket clientSocket) throws IOException {
+        sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
+        receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
+        CommunicationPacket clientSentPacket = receiver.receive();
+        handlerRegistry.get(clientSentPacket.type()).handlePacket(clientSentPacket);
     }
 
     private void listen(){
         new Thread(() -> {
             while(true) {
                 try {
-                    Socket clientSocket = serverSocket.accept();
+                    clientSocket = serverSocket.accept();
                     handleClient(clientSocket);
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
