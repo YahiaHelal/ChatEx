@@ -1,6 +1,8 @@
 package com.yahia.anotherchatapplicatoin.server;
 
-import com.yahia.anotherchatapplicatoin.handlers.ServerClientHandler;
+import com.yahia.anotherchatapplicatoin.server.accept.ServerConnectionContext;
+import com.yahia.anotherchatapplicatoin.server.accept.ServerPacketHandlerRegistry;
+import com.yahia.anotherchatapplicatoin.server.session.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
@@ -9,7 +11,6 @@ import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
-import com.yahia.anotherchatapplicatoin.protocol.packet.PacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
@@ -29,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+//TODO: make the server more like an API, that handles jobs like register/un-register clients, processing handshakes and stuff
 public class Server {
 
     private final int SERVER_PORT;
@@ -36,11 +38,7 @@ public class Server {
     private final Set<String> CLIENT_NAMES;
     private final Logger LOGGER;
     private ServerSocket serverSocket;
-    private final PacketHandlerRegistry handlerRegistry;
-    private Socket clientSocket; // NOTE: overwritten with each new connection
-    private MessageSender sender; //NOTE: overwritten with each new connection
-    private MessageReceiver receiver; //NOTE: overwritten with each new connection
-
+    private final ServerPacketHandlerRegistry serverHandlerRegistry;
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
@@ -51,7 +49,7 @@ public class Server {
         CLIENT_NAMES = ConcurrentHashMap.newKeySet();
         LOGGER = LogManager.getLogger();
 
-        handlerRegistry = new PacketHandlerRegistry();
+        serverHandlerRegistry = new ServerPacketHandlerRegistry();
         registerHandlers();
     }
 
@@ -64,22 +62,12 @@ public class Server {
         }
     }
 
-    public String getServerAddress() {
-        return SocketUtils.getServerSocketAddress(serverSocket);
-    }
-    public int getServerPort() {
-        return SERVER_PORT;
-    }
-
     public void broadCastPacket(CommunicationPacket packet) {
         for(ServerClientHandler clientHandler: CLIENTS) {
             clientHandler.sendMessageToClient(packet);
         }
     }
 
-    //TODO: client can disconnect form the server, should rollback ui to login screen
-    //TODO: when disconnected, server should broadcast the info
-    //TODO: use Disconnect Request-Response records
     public void removeClient(ServerClientHandler clientHandler, String clientUsername) {
         CLIENTS.remove(clientHandler);
         CLIENT_NAMES.remove(clientUsername);
@@ -88,9 +76,14 @@ public class Server {
         broadCastPacket(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, info));
     }
 
+    public void registerClient(String username, ServerClientHandler handler) {
+        CLIENTS.add(handler);
+        CLIENT_NAMES.add(username);
+    }
+
 
     private void registerHandlers() {
-        handlerRegistry.register(PacketType.HANDSHAKE_REQUEST, this::handleHandshakeRequest);
+        serverHandlerRegistry.register(PacketType.HANDSHAKE_REQUEST, this::handleHandshakeRequest);
     }
 
 
@@ -103,38 +96,42 @@ public class Server {
         if(CLIENT_NAMES.contains(handShakeRequest.username())) {
             return ConnectionStatus.REJECT_USERNAME_TAKEN;
         }
-        CLIENT_NAMES.add(handShakeRequest.username());
         return ConnectionStatus.ACCEPT;
     }
 
-    private void handleHandshakeRequest(CommunicationPacket packet) throws IOException {
+    private void handleAccept(ServerConnectionContext ctx, HandshakeRequest request) throws IOException {
+        ServerClientHandler clientHandler = new ServerClientHandler(ctx.clientSocket(), this, request.username());
+        registerClient(request.username(), clientHandler);
+        LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+        new Thread(clientHandler).start();
+    }
+
+    private void handleHandshakeRequest(ServerConnectionContext ctx) throws IOException {
+        CommunicationPacket packet = ctx.receiver().receive();
+
         LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
         HandshakeRequest request = JsonHelper.GSON.fromJson(packet.payload(), HandshakeRequest.class);
         ConnectionStatus status = checkStatus(request);
         String response = JsonHelper.GSON.toJson(new HandshakeResponse(status));
 
-        sender.send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
+        ctx.sender().send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
 
         if(status == ConnectionStatus.ACCEPT) {
-            ServerClientHandler clientHandler = new ServerClientHandler(clientSocket, this, request.username());
-            CLIENTS.add(clientHandler);
-            LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-            new Thread(clientHandler).start();
+           handleAccept(ctx, request);
         }
     }
 
     private void handleClient(Socket clientSocket) throws IOException {
-        sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
-        receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
-        CommunicationPacket clientSentPacket = receiver.receive();
-        handlerRegistry.get(clientSentPacket.type()).handlePacket(clientSentPacket);
+       MessageSender sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
+       MessageReceiver receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
+       handleHandshakeRequest(new ServerConnectionContext(sender, receiver, clientSocket));
     }
 
     private void listen(){
         new Thread(() -> {
             while(true) {
                 try {
-                    clientSocket = serverSocket.accept();
+                    Socket clientSocket = serverSocket.accept();
                     handleClient(clientSocket);
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
