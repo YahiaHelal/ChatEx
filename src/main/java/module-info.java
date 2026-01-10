@@ -14,8 +14,6 @@ module org.example.anotherchatapplicatoin {
     opens com.yahia.anotherchatapplicatoin.client to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.server;
     opens com.yahia.anotherchatapplicatoin.server to javafx.fxml;
-    exports com.yahia.anotherchatapplicatoin.handlers;
-    opens com.yahia.anotherchatapplicatoin.handlers to javafx.fxml;
     opens com.yahia.anotherchatapplicatoin.utils.ui to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.utils.ui;
     opens com.yahia.anotherchatapplicatoin.client.listeners to javafx.fxml;
@@ -38,4 +36,6 @@ module org.example.anotherchatapplicatoin {
     opens com.yahia.anotherchatapplicatoin.protocol.handshake to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.protocol.json;
     opens com.yahia.anotherchatapplicatoin.protocol.json to javafx.fxml;
+    opens com.yahia.anotherchatapplicatoin.server.session to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.server.session;
 }

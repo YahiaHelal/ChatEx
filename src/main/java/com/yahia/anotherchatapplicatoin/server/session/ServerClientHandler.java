@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.handlers;
+package com.yahia.anotherchatapplicatoin.server.session;
 
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
