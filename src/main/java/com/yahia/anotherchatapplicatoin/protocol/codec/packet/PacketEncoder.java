@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.protocol.codec;
+package com.yahia.anotherchatapplicatoin.protocol.codec.packet;
 
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 
