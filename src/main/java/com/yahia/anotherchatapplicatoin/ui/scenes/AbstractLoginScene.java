@@ -7,6 +7,7 @@ public abstract class AbstractLoginScene {
 
     public final void init() {
         initControls();
+        applyConstraints();
         buildUi();
     }
 
@@ -14,5 +15,5 @@ public abstract class AbstractLoginScene {
     protected abstract void initControls();
     protected abstract void buildUi();
     protected abstract void setUpActions();
-
+    protected abstract void applyConstraints();
 }

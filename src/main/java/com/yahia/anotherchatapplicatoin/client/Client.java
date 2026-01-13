@@ -161,8 +161,8 @@ public class Client extends AbstractClient{
     }
 
     private void requestDisconnect() {
-        JsonDisconnectRequestEncoder decoder = new JsonDisconnectRequestEncoder();
-        String info = decoder.encode(new DisconnectRequest(clientName));
+        JsonDisconnectRequestEncoder encoder = new JsonDisconnectRequestEncoder();
+        String info = encoder.encode(new DisconnectRequest(clientName));
         sendMessage(new CommunicationPacket(PacketType.DISCONNECT_REQUEST, info));
     }
 

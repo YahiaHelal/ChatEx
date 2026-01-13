@@ -108,7 +108,7 @@ public class Server {
         ServerClientHandler clientHandler = new ServerClientHandler(ctx.clientSocket(), this, request.username());
         registerClient(request.username(), clientHandler);
         LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-        new Thread(clientHandler).start();
+        new Thread(clientHandler, "server-client-handler-thread").start();
     }
 
     private void handleHandshakeRequest(ServerConnectionContext ctx) throws IOException {

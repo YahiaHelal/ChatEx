@@ -5,13 +5,13 @@ import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -19,11 +19,16 @@ public class ChatScene extends AbstractChatScene{
     private TextArea chatTextArea;
     private Button sendButton;
     private Button logoutButton;
+    private Button attachButton;
+    private Button returnButton;
+    private ImageView attachIcon;
+    private ImageView returnIcon;
     private BorderPane root;
     private Scene chatScene;
     private TextField messageTextField;
     private HBox bottomBar;
     private HBox topBar;
+    private Region spacer;
     private ChatSceneListener chatSceneListener;
     private final int WIDTH = 880, HEIGHT = 550;
 
@@ -85,9 +90,12 @@ public class ChatScene extends AbstractChatScene{
         messageTextField.setPromptText("send your friends an insult to greet them");
         sendButton = new Button("Send");
         logoutButton = new Button("Logout");
+        attachButton = new Button();
+        returnButton = new Button();
         root = new BorderPane();
-        bottomBar = new HBox(10, messageTextField, sendButton);
-        topBar = new HBox(logoutButton);
+        spacer = new Region();
+        bottomBar = new HBox(10, messageTextField, attachButton, sendButton);
+        topBar = new HBox(10, returnButton, spacer, logoutButton);
         chatScene = new Scene(root, WIDTH, HEIGHT);
     }
 
@@ -96,6 +104,14 @@ public class ChatScene extends AbstractChatScene{
         root.setCenter(chatTextArea);
         root.setBottom(bottomBar);
         root.setTop(topBar);
+        attachButton.setGraphic(attachIcon);
+        returnButton.setGraphic(returnIcon);
+
+    }
+    @Override
+    protected void loadResources() {
+        attachIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/attach.png"))));
+        returnIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/return.png"))));
     }
 
     @Override
@@ -112,7 +128,17 @@ public class ChatScene extends AbstractChatScene{
         sendButton.setPrefWidth(100);
         logoutButton.setFocusTraversable(false);
 
+        attachIcon.setFitHeight(16);
+        attachIcon.setFitWidth(16);
+
+        returnIcon.setFitWidth(16);
+        returnIcon.setFitHeight(16);
+
+        attachButton.setTooltip(new Tooltip("Attach File"));
+        returnButton.setTooltip(new Tooltip("Return To Login Window"));
+
         HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
+        HBox.setHgrow(spacer, Priority.ALWAYS);
     }
 
 

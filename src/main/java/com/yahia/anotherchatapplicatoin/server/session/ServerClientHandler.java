@@ -57,6 +57,7 @@ public class ServerClientHandler implements Runnable {
     private void updateClientUsername(String newName) {
         this.clientUsername = newName;
     }
+
     private void handleBroadCast(CommunicationPacket packet){
         CHAT_SERVER.broadCastPacket(packet);
     };
@@ -80,7 +81,7 @@ public class ServerClientHandler implements Runnable {
             while((msg = in.readLine()) != null) {
                 LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, SocketUtils.getSocketAddress(CLIENT_SOCKET)));
                 CommunicationPacket clientPacket =  packetDecoder.decode(msg);
-                handlerRegistry.get(clientPacket.type()).handlePacket(packetDecoder.decode(msg));
+                handlerRegistry.get(clientPacket.type()).handlePacket(clientPacket);
             }
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't receive client message");

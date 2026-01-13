@@ -7,8 +7,9 @@ public abstract class AbstractChatScene {
 
     public final void init() {
         initControls();
-        buildUi();
+        loadResources();
         applyConstraints();
+        buildUi();
     }
 
     public abstract void wireController(ChatSceneListener chatListener, Stage stage);
@@ -16,4 +17,5 @@ public abstract class AbstractChatScene {
     protected abstract void buildUi();
     protected abstract void setUpActions(Stage stage);
     protected abstract void applyConstraints();
+    protected abstract void loadResources();
 }

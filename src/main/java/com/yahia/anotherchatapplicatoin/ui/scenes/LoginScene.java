@@ -5,8 +5,13 @@ import com.yahia.anotherchatapplicatoin.utils.ui.LayoutUtils;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+
+import java.util.Objects;
 
 
 public class LoginScene extends AbstractLoginScene {
@@ -14,8 +19,10 @@ public class LoginScene extends AbstractLoginScene {
     private TextField ipAddressTextField;
     private TextField portTextField;
     private Button loginButton;
+
     private GridPane loginGrid;
     private Scene loginScene;
+
     private final int WIDTH = 600, HEIGHT = 400;
     private LoginSceneListener loginSceneListener;
 
@@ -64,11 +71,15 @@ public class LoginScene extends AbstractLoginScene {
         loginGrid.add(portTextField, 0, 2);
         loginGrid.add(loginButton, 0, 3);
         LayoutUtils.setLoginGridSpacing(loginGrid);
-        loginButton.setPrefWidth(75);
-        usernameTextField.setPrefWidth(200);
-
     }
 
+
+
+    @Override
+    protected void applyConstraints() {
+        loginButton.setPrefWidth(75);
+        usernameTextField.setPrefWidth(200);
+    }
     @Override
     protected void setUpActions() {
         //TODO: getPort() throws an exception when empty port
