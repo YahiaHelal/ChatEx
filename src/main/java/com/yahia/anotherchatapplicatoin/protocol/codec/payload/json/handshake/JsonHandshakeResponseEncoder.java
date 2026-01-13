@@ -7,6 +7,6 @@ import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 public class JsonHandshakeResponseEncoder implements PayloadEncoder<HandshakeResponse> {
     @Override
     public String encode(HandshakeResponse payload) {
-        return JsonHelper.GSON.toJson(payload.status(), HandshakeResponse.class);
+        return JsonHelper.GSON.toJson(payload, HandshakeResponse.class);
     }
 }

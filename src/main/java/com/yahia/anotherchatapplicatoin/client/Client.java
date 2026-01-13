@@ -46,15 +46,12 @@ public class Client extends AbstractClient{
     private MessageReceiver receiver;
     private volatile DisconnectReason disconnectReason;
     private final PacketHandlerRegistry handlerRegistry;
-    private final PayloadDecoderRegistry decoderRegistry;
-    private final PayloadEncoderRegistry encoderRegistry;
+
 
     //TODO: client fetches the server's old messages when connected, from a NoSQL DB
     public Client(String clientName, String serverIp, int port) throws IOException {
         this.clientName = clientName;
         handlerRegistry = new PacketHandlerRegistry();
-        decoderRegistry = new PayloadDecoderRegistry(); //TODO: will use later
-        encoderRegistry = new PayloadEncoderRegistry(); //TODO: will use later
         startNewClient(serverIp, port);
     }
 
@@ -141,17 +138,6 @@ public class Client extends AbstractClient{
         handlerRegistry.register(PacketType.BROADCAST_MESSAGE, this::handleBroadCastMessage);
     }
 
-    @Override
-    protected void registerEncoders() {
-        encoderRegistry.register(PacketType.HANDSHAKE_REQUEST, new JsonHandshakeRequestEncoder());
-        encoderRegistry.register(PacketType.BROADCAST_MESSAGE, new JsonBroadcastMessageEncoder());
-    }
-
-    @Override
-    protected void registerDecoders() {
-        decoderRegistry.register(PacketType.HANDSHAKE_RESPONSE, new JsonHandshakeResponseDecoder());
-        decoderRegistry.register(PacketType.BROADCAST_MESSAGE, new JsonBroadcastMessageDecoder());
-    }
 
     private void listen() {
         CommunicationPacket packet;
@@ -161,7 +147,7 @@ public class Client extends AbstractClient{
                 handlerRegistry.get(packet.type()).handlePacket(packet);
             }
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Client socket has been closed");
+            LOGGER.log(Level.SEVERE, String.format("Client socket has been closed: %s", e.getMessage()));
         }finally {
             LOGGER.log(Level.SEVERE, "Server dies");
             disconnect(DisconnectReason.SERVER_SHUTDOWN);
