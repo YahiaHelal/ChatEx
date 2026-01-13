@@ -1,10 +1,14 @@
 package com.yahia.anotherchatapplicatoin.server;
 
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageEncoder;
 import com.yahia.anotherchatapplicatoin.server.accept.ServerConnectionContext;
 import com.yahia.anotherchatapplicatoin.server.accept.ServerPacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.server.session.ServerClientHandler;
-import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketDecoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
@@ -58,7 +62,7 @@ public class Server {
             run();
             listen();
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s:%d", serverSocket.getInetAddress().getHostAddress(), this.SERVER_PORT));
+            LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s:%d",SocketUtils.getServerSocketAddress(serverSocket), this.SERVER_PORT));
         }
     }
 
@@ -72,7 +76,8 @@ public class Server {
         CLIENTS.remove(clientHandler);
         CLIENT_NAMES.remove(clientUsername);
         LOGGER.log(Level.INFO, String.format("%s has disconnected", clientUsername));
-        String info = JsonHelper.GSON.toJson(new BroadCastMessage("SERVER", String.format("%s has been disconnected", clientUsername)));
+        JsonBroadcastMessageEncoder encoder = new JsonBroadcastMessageEncoder();
+        String info = encoder.encode(new BroadCastMessage("SERVER", String.format("%s has been disconnected", clientUsername)));
         broadCastPacket(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, info));
     }
 
@@ -107,15 +112,19 @@ public class Server {
     }
 
     private void handleHandshakeRequest(ServerConnectionContext ctx) throws IOException {
-        CommunicationPacket packet = ctx.receiver().receive();
-
         LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
-        HandshakeRequest request = JsonHelper.GSON.fromJson(packet.payload(), HandshakeRequest.class);
+        JsonHandshakeRequestDecoder decoder = new JsonHandshakeRequestDecoder();
+        JsonHandshakeResponseEncoder encoder = new JsonHandshakeResponseEncoder();
+
+        CommunicationPacket packet = ctx.receiver().receive();
+        HandshakeRequest request = decoder.decode(packet.payload());
         ConnectionStatus status = checkStatus(request);
-        String response = JsonHelper.GSON.toJson(new HandshakeResponse(status));
+
+        String response = encoder.encode(new HandshakeResponse(status));
+
 
         ctx.sender().send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
-
+        LOGGER.log(Level.INFO, String.format("Handshake status: %s", status));
         if(status == ConnectionStatus.ACCEPT) {
            handleAccept(ctx, request);
         }
@@ -132,6 +141,7 @@ public class Server {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
+                    LOGGER.log(Level.INFO, "Server receives a new connection");
                     handleClient(clientSocket);
                 }catch (IOException e) {
                     LOGGER.log(Level.WARNING, "Server couldn't connect to client");
@@ -139,8 +149,5 @@ public class Server {
             }
         }).start();
     }
-
-
-
-
+    
 }

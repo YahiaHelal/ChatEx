@@ -2,6 +2,9 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
@@ -43,7 +46,8 @@ public class LoginSceneController implements LoginSceneListener {
         });
     }
     private void sendHandShake() {
-        String username = JsonHelper.GSON.toJson(new HandshakeRequest(client.getClientName()));
+        JsonHandshakeRequestEncoder encoder = new JsonHandshakeRequestEncoder();
+        String username = encoder.encode(new HandshakeRequest(client.getClientName()));
         client.sendMessage(new CommunicationPacket(PacketType.HANDSHAKE_REQUEST, username));
     }
 

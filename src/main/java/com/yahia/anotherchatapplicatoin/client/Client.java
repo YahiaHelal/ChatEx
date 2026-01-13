@@ -3,8 +3,18 @@ package com.yahia.anotherchatapplicatoin.client;
 import com.yahia.anotherchatapplicatoin.client.listeners.HandshakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.DisconnectListener;
-import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketDecoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.JsonPacketEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.PayloadDecoderRegistry;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.PayloadEncoderRegistry;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
@@ -32,11 +42,13 @@ public class Client extends AbstractClient{
     private MessageListener messageListener;
     private HandshakeListener handShakeListener;
     private DisconnectListener serverEventsListener;
-    private volatile DisconnectReason disconnectReason;
-    private final PacketHandlerRegistry handlerRegistry;
     private MessageSender sender;
     private MessageReceiver receiver;
-    //TODO: client fetches the server's old messages when connected
+    private volatile DisconnectReason disconnectReason;
+    private final PacketHandlerRegistry handlerRegistry;
+
+
+    //TODO: client fetches the server's old messages when connected, from a NoSQL DB
     public Client(String clientName, String serverIp, int port) throws IOException {
         this.clientName = clientName;
         handlerRegistry = new PacketHandlerRegistry();
@@ -126,6 +138,7 @@ public class Client extends AbstractClient{
         handlerRegistry.register(PacketType.BROADCAST_MESSAGE, this::handleBroadCastMessage);
     }
 
+
     private void listen() {
         CommunicationPacket packet;
         try {
@@ -134,7 +147,7 @@ public class Client extends AbstractClient{
                 handlerRegistry.get(packet.type()).handlePacket(packet);
             }
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Client socket has been closed");
+            LOGGER.log(Level.SEVERE, String.format("Client socket has been closed: %s", e.getMessage()));
         }finally {
             LOGGER.log(Level.SEVERE, "Server dies");
             disconnect(DisconnectReason.SERVER_SHUTDOWN);
@@ -148,17 +161,20 @@ public class Client extends AbstractClient{
     }
 
     private void requestDisconnect() {
-        String info = JsonHelper.GSON.toJson(new DisconnectRequest(clientName));
+        JsonDisconnectRequestEncoder decoder = new JsonDisconnectRequestEncoder();
+        String info = decoder.encode(new DisconnectRequest(clientName));
         sendMessage(new CommunicationPacket(PacketType.DISCONNECT_REQUEST, info));
     }
 
     private void handleHandShakeResponse(CommunicationPacket packet) {
-        HandshakeResponse handShakeResponse = JsonHelper.GSON.fromJson(packet.payload(), HandshakeResponse.class);
+        JsonHandshakeResponseDecoder decoder = new JsonHandshakeResponseDecoder();
+        HandshakeResponse handShakeResponse = decoder.decode(packet.payload());
         notifyHandShakeListener(handShakeResponse.status());
     }
 
     private void handleBroadCastMessage(CommunicationPacket packet) {
-        BroadCastMessage broadCastMessage = JsonHelper.GSON.fromJson(packet.payload(), BroadCastMessage.class);
+        JsonBroadcastMessageDecoder decoder = new JsonBroadcastMessageDecoder();
+        BroadCastMessage broadCastMessage = decoder.decode(packet.payload());
         notifyMessageListener(broadCastMessage);
     }
 
@@ -181,8 +197,9 @@ public class Client extends AbstractClient{
     }
 
     private void broadCastInternal(String sender, String text) {
-        BroadCastMessage broadCastMessage = new BroadCastMessage(sender, text);
-        sendMessage(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, JsonHelper.GSON.toJson(broadCastMessage)));
+        JsonBroadcastMessageEncoder encoder = new JsonBroadcastMessageEncoder();
+        BroadCastMessage msg = new BroadCastMessage(sender, text);
+        sendMessage(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, encoder.encode(msg)));
     }
 
     private String prefixName(String name, String message) {

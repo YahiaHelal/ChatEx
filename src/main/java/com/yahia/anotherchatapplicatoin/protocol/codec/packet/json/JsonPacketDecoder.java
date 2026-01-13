@@ -1,13 +1,11 @@
-package com.yahia.anotherchatapplicatoin.protocol.codec;
+package com.yahia.anotherchatapplicatoin.protocol.codec.packet.json;
 
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.PacketDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
-import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
-
-import java.util.logging.Logger;
 
 
-public class JsonPacketDecoder implements PacketDecoder{
+public class JsonPacketDecoder implements PacketDecoder {
 
     @Override
     public CommunicationPacket decode(String raw) {

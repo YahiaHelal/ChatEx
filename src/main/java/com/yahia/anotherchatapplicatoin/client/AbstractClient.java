@@ -8,6 +8,8 @@ public abstract class AbstractClient {
         connect(serverIp, port);
         initMessengers();
         registerHandlers();
+//        registerEncoders();
+//        registerDecoders();
         startListener();
     }
 

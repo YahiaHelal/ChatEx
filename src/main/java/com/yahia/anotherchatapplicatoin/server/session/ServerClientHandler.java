@@ -1,5 +1,8 @@
 package com.yahia.anotherchatapplicatoin.server.session;
 
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
@@ -39,8 +42,8 @@ public class ServerClientHandler implements Runnable {
 
 
     public void sendMessageToClient(CommunicationPacket packet) {
-        CommunicationPacket broadBastPacket = new CommunicationPacket(PacketType.BROADCAST_MESSAGE, packet.payload());
-        out.println(JsonHelper.GSON.toJson(broadBastPacket));
+        JsonPacketEncoder encoder = new JsonPacketEncoder();
+        out.println(encoder.encode(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, packet.payload())));
         LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", SocketUtils.getSocketAddress(CLIENT_SOCKET)));
     }
 
@@ -63,7 +66,8 @@ public class ServerClientHandler implements Runnable {
 
     }
     private void handleDisconnection(CommunicationPacket packet) {
-        DisconnectRequest request = JsonHelper.GSON.fromJson(packet.payload(), DisconnectRequest.class);
+        JsonDisconnectRequestDecoder decoder = new JsonDisconnectRequestDecoder();
+        DisconnectRequest request = decoder.decode(packet.payload());
         CHAT_SERVER.removeClient(this, request.username());
     }
 
@@ -71,11 +75,12 @@ public class ServerClientHandler implements Runnable {
     public void run() {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(CLIENT_SOCKET.getInputStream()));
+            JsonPacketDecoder packetDecoder = new JsonPacketDecoder();
             String msg;
             while((msg = in.readLine()) != null) {
-                LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, CLIENT_SOCKET.getInetAddress().getHostAddress()));
-                CommunicationPacket clientPacket =  JsonHelper.GSON.fromJson(msg, CommunicationPacket.class);
-                handlerRegistry.get(clientPacket.type()).handlePacket(clientPacket);
+                LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, SocketUtils.getSocketAddress(CLIENT_SOCKET)));
+                CommunicationPacket clientPacket =  packetDecoder.decode(msg);
+                handlerRegistry.get(clientPacket.type()).handlePacket(packetDecoder.decode(msg));
             }
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Server couldn't receive client message");

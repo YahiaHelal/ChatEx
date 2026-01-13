@@ -1,12 +1,11 @@
 package com.yahia.anotherchatapplicatoin.transport.tcp;
 
-import com.yahia.anotherchatapplicatoin.protocol.codec.PacketDecoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.packet.PacketDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 public class SocketMessageReceiver implements MessageReceiver {
     private final BufferedReader in;
