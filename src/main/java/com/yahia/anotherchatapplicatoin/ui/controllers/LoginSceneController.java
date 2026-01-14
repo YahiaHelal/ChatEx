@@ -52,13 +52,13 @@ public class LoginSceneController implements LoginSceneListener {
     }
 
     @Override
-    public void onLoginButtonClicked(String username, String ipAddress, int port) {
+    public void onLoginButtonClicked(String username, String ipAddress, String port) {
         try {
-            client = new Client(username, ipAddress, port);
+            client = new Client(username, ipAddress, Integer.parseInt(port));
             initializeHandShakeListener();
             sendHandShake();
-        }catch(IOException e) {
-            LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s:%d", username, ipAddress, port));
+        }catch(Exception e) {
+            LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s:%s", username, ipAddress, port));
             AlertUtils.warn(ConnectionStatus.REJECT_IO.message(), "Login Failed").showAndWait();
         }
     }

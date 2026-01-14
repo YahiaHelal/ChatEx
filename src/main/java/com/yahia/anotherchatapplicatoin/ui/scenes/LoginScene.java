@@ -33,8 +33,8 @@ public class LoginScene extends AbstractLoginScene {
     public String getIpAddress() {
         return ipAddressTextField.getText();
     }
-    public int getPort() throws NumberFormatException{
-        return Integer.parseInt(portTextField.getText());
+    public String getPort(){
+        return portTextField.getText();
     }
     public String getUsername() {
         return usernameTextField.getText();

@@ -5,4 +5,5 @@ public interface ChatSceneListener {
     void onUserExit();
     void onSceneShown();
     void onSendButtonClicked();
+    void onReturnButtonClicked();
 }

@@ -31,6 +31,7 @@ public class ChatScene extends AbstractChatScene{
     private Region spacer;
     private ChatSceneListener chatSceneListener;
     private final int WIDTH = 880, HEIGHT = 550;
+    private final int ICON_HEIGHT = 16, ICON_WIDTH = 16;
 
 
     public ChatScene(){
@@ -48,15 +49,18 @@ public class ChatScene extends AbstractChatScene{
         return messageTextField;
     }
 
+    @Override
+    public void wireController(ChatSceneListener chatListener, Stage stage) {
+        this.chatSceneListener = chatListener;
+        chatListener.onSceneShown();
+        setUpActions(stage);
+    }
 
     @Override
-    public void setUpActions(Stage stage) {
-        chatSceneListener.onSceneShown();
-
+    protected void setupLoginButtonActions(Stage stage) {
         sendButton.setOnAction(actionEvent -> {
             chatSceneListener.onSendButtonClicked();
         });
-
 
         stage.setOnCloseRequest(windowEvent -> {
             Optional<ButtonType> result = AlertUtils.confirm("Are you sure you want to quit ?", "Exit").showAndWait();
@@ -66,7 +70,10 @@ public class ChatScene extends AbstractChatScene{
                 windowEvent.consume();
             }
         });
+    }
 
+    @Override
+    protected void setupLogoutButtonActions() {
         logoutButton.setOnAction(actionEvent -> {
             Optional<ButtonType> result =  AlertUtils.confirm("Are you sure you want to logout ?", "Logout").showAndWait();
             if(result.isPresent() && result.get() == ButtonType.OK) {
@@ -75,28 +82,57 @@ public class ChatScene extends AbstractChatScene{
         });
     }
 
-
-    //TODO: server event listener
     @Override
-    public void wireController(ChatSceneListener chatListener, Stage stage) {
-        this.chatSceneListener = chatListener;
-        setUpActions(stage);
+    protected void setupReturnButtonActions() {
+        returnButton.setOnAction(actionEvent -> {
+            chatSceneListener.onReturnButtonClicked();
+        });
+    }
+
+
+    @Override
+    protected void setBottomConstraints() {
+        bottomBar.setPadding(new Insets(10));
+        HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
+        HBox.setHgrow(spacer, Priority.ALWAYS); // expand the space between return and logout buttons
+
+        sendButton.setPrefWidth(100);
+        attachButton.setTooltip(new Tooltip("Attach File"));
+    }
+
+    @Override
+    protected void setTopConstraints() {
+        logoutButton.setFocusTraversable(false);
+        returnButton.setTooltip(new Tooltip("Return To Login Window"));
+
+        topBar.setPadding(new Insets(5, 10, 5, 10));
+        topBar.setAlignment(Pos.CENTER_RIGHT);
+    }
+
+    @Override
+    protected void setCenterConstraints() {
+        root.setPadding(new Insets(10));
+        chatTextArea.setEditable(false);
+        chatTextArea.setWrapText(true);
     }
 
     @Override
     protected void initControls() {
         chatTextArea = new TextArea();
+        root = new BorderPane();
+        spacer = new Region();
+        attachButton = new Button();
+        returnButton = new Button();
         messageTextField = new TextField();
+
         messageTextField.setPromptText("send your friends an insult to greet them");
         sendButton = new Button("Send");
         logoutButton = new Button("Logout");
-        attachButton = new Button();
-        returnButton = new Button();
-        root = new BorderPane();
-        spacer = new Region();
+
         bottomBar = new HBox(10, messageTextField, attachButton, sendButton);
         topBar = new HBox(10, returnButton, spacer, logoutButton);
         chatScene = new Scene(root, WIDTH, HEIGHT);
+
     }
 
     @Override
@@ -104,6 +140,7 @@ public class ChatScene extends AbstractChatScene{
         root.setCenter(chatTextArea);
         root.setBottom(bottomBar);
         root.setTop(topBar);
+
         attachButton.setGraphic(attachIcon);
         returnButton.setGraphic(returnIcon);
 
@@ -115,32 +152,11 @@ public class ChatScene extends AbstractChatScene{
     }
 
     @Override
-    protected void applyConstraints() {
-        root.setPadding(new Insets(10));
+    protected void setResourcesConstraints() {
+        attachIcon.setFitHeight(ICON_HEIGHT);
+        attachIcon.setFitWidth(ICON_WIDTH);
 
-        chatTextArea.setEditable(false);
-        chatTextArea.setWrapText(true);
-
-        bottomBar.setPadding(new Insets(10));
-        topBar.setPadding(new Insets(5, 10, 5, 10));
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-
-        sendButton.setPrefWidth(100);
-        logoutButton.setFocusTraversable(false);
-
-        attachIcon.setFitHeight(16);
-        attachIcon.setFitWidth(16);
-
-        returnIcon.setFitWidth(16);
-        returnIcon.setFitHeight(16);
-
-        attachButton.setTooltip(new Tooltip("Attach File"));
-        returnButton.setTooltip(new Tooltip("Return To Login Window"));
-
-        HBox.setHgrow(messageTextField, Priority.ALWAYS); // expand message input
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        returnIcon.setFitWidth(ICON_HEIGHT);
+        returnIcon.setFitHeight(ICON_WIDTH);
     }
-
-
-
 }

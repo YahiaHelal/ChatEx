@@ -49,6 +49,11 @@ public class ChatSceneController implements ChatSceneListener {
     }
 
     @Override
+    public void onReturnButtonClicked() {
+        navigator.showLoginScene();
+    }
+
+    @Override
     public void onWindowClosed() {
         client.disconnect(DisconnectReason.WINDOW_CLOSED);
     }
