@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.ui.scenes;
+package com.yahia.anotherchatapplicatoin.ui.scenes.base;
 
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import javafx.stage.Stage;

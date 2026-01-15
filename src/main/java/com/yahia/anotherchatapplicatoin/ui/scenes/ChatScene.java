@@ -1,5 +1,6 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
+import com.yahia.anotherchatapplicatoin.ui.scenes.base.AbstractChatScene;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import javafx.geometry.Insets;
@@ -15,7 +16,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 
-public class ChatScene extends AbstractChatScene{
+public class ChatScene extends AbstractChatScene {
     private TextArea chatTextArea;
     private Button sendButton;
     private Button logoutButton;

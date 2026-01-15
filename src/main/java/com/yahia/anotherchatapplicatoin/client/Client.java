@@ -1,24 +1,18 @@
 package com.yahia.anotherchatapplicatoin.client;
 
+import com.yahia.anotherchatapplicatoin.client.base.AbstractClient;
 import com.yahia.anotherchatapplicatoin.client.listeners.HandshakeListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.MessageListener;
 import com.yahia.anotherchatapplicatoin.client.listeners.DisconnectListener;
 import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEncoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.PayloadDecoderRegistry;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.PayloadEncoderRegistry;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestEncoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestDecoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseDecoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
-import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
@@ -35,7 +29,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Client extends AbstractClient{
+public class Client extends AbstractClient {
     private final Logger LOGGER = LogManager.getLogger();
     private Socket clientSocket;
     private String clientName;

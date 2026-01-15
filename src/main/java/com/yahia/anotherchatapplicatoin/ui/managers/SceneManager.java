@@ -17,6 +17,11 @@ public class SceneManager implements SceneNavigator {
     }
 
     @Override
+    public void showActiveServersScene(SceneNavigator navigator, Client client) {
+        stage.setScene(sceneFactory.createActiveServersScene(navigator, client).getScene());
+    }
+
+    @Override
     public void showLoginScene() {
         stage.setScene(sceneFactory.createLoginScene().getScene());
     }

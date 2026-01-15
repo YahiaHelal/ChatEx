@@ -1,16 +1,14 @@
 package com.yahia.anotherchatapplicatoin.server;
 
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestDecoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageEncoder;
-import com.yahia.anotherchatapplicatoin.server.accept.ServerConnectionContext;
+import com.yahia.anotherchatapplicatoin.server.accept.ServerHandshakeContext;
 import com.yahia.anotherchatapplicatoin.server.accept.ServerPacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.server.session.ServerClientHandler;
 import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
-import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
 import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
@@ -104,14 +102,14 @@ public class Server {
         return ConnectionStatus.ACCEPT;
     }
 
-    private void handleAccept(ServerConnectionContext ctx, HandshakeRequest request) throws IOException {
+    private void handleAccept(ServerHandshakeContext ctx, HandshakeRequest request) throws IOException {
         ServerClientHandler clientHandler = new ServerClientHandler(ctx.clientSocket(), this, request.username());
         registerClient(request.username(), clientHandler);
         LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
         new Thread(clientHandler, "server-client-handler-thread").start();
     }
 
-    private void handleHandshakeRequest(ServerConnectionContext ctx) throws IOException {
+    private void handleHandshakeRequest(ServerHandshakeContext ctx) throws IOException {
         LOGGER.log(Level.INFO, "Server Receives a HandShake Request");
         JsonHandshakeRequestDecoder decoder = new JsonHandshakeRequestDecoder();
         JsonHandshakeResponseEncoder encoder = new JsonHandshakeResponseEncoder();
@@ -133,7 +131,7 @@ public class Server {
     private void handleClient(Socket clientSocket) throws IOException {
        MessageSender sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
        MessageReceiver receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
-       handleHandshakeRequest(new ServerConnectionContext(sender, receiver, clientSocket));
+       handleHandshakeRequest(new ServerHandshakeContext(sender, receiver, clientSocket));
     }
 
     private void listen(){

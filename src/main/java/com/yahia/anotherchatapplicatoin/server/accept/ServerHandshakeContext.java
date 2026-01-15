@@ -5,7 +5,7 @@ import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 
 import java.net.Socket;
 
-public record ServerConnectionContext(
+public record ServerHandshakeContext(
         MessageSender sender,
         MessageReceiver receiver,
         Socket clientSocket)

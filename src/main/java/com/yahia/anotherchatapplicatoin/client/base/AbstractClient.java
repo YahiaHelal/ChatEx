@@ -1,4 +1,4 @@
-package com.yahia.anotherchatapplicatoin.client;
+package com.yahia.anotherchatapplicatoin.client.base;
 
 import java.io.IOException;
 

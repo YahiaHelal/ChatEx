@@ -38,4 +38,6 @@ module org.example.anotherchatapplicatoin {
     opens com.yahia.anotherchatapplicatoin.protocol.json to javafx.fxml;
     opens com.yahia.anotherchatapplicatoin.server.session to javafx.fxml;
     exports com.yahia.anotherchatapplicatoin.server.session;
+    exports com.yahia.anotherchatapplicatoin.client.base;
+    opens com.yahia.anotherchatapplicatoin.client.base to javafx.fxml;
 }

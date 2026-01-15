@@ -10,6 +10,7 @@ import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
@@ -22,9 +23,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoginSceneController implements LoginSceneListener {
+    private final Logger LOGGER = LogManager.getLogger();
     private final SceneNavigator navigator;
     private Client client;
-    private static final Logger LOGGER = LogManager.getLogger();
 
     public  LoginSceneController(SceneNavigator navigator) {
         this.navigator = navigator;
@@ -61,5 +62,10 @@ public class LoginSceneController implements LoginSceneListener {
             LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s:%s", username, ipAddress, port));
             AlertUtils.warn(ConnectionStatus.REJECT_IO.message(), "Login Failed").showAndWait();
         }
+    }
+
+    @Override
+    public void onConnectedServersButtonClicked() {
+        navigator.showActiveServersScene(navigator, client);
     }
 }
