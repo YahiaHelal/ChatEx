@@ -1,9 +1,10 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes.listeners;
 
-import com.yahia.anotherchatapplicatoin.client.session.ServerConnection;
-import javafx.scene.control.ListView;
+import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnectionContext;
+import javafx.collections.ObservableList;
 
 public interface ActiveServersSceneListener {
-    void update();
+    ObservableList<ServerConnectionContext> getServersList();
+    void addServer(ServerConnectionContext connectionContext);
     void onReturnButtonClicked();
 }

@@ -11,6 +11,11 @@ public class SceneManager implements SceneNavigator {
         this.stage = stage;
         this.sceneFactory = factory;
     }
+
+    public SceneFactory getFactory() {
+        return this.sceneFactory;
+    }
+
     @Override
     public void showChatScene(Client client) {
         stage.setScene(sceneFactory.createChatScene(client).getScene());

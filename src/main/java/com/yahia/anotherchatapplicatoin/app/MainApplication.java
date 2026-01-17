@@ -12,8 +12,9 @@ public class MainApplication extends Application {
         DefaultSceneFactory sceneFactory = new DefaultSceneFactory(stage);
         SceneManager sceneManager = new SceneManager(stage, sceneFactory);
         sceneFactory.setNavigator(sceneManager);
+        sceneFactory.wireServersSceneController();
         sceneManager.showLoginScene();
-        stage.setTitle("Chat!");
+        stage.setTitle("ChatIO!");
         stage.show();
     }
 

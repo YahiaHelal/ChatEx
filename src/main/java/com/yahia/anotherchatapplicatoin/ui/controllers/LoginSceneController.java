@@ -10,6 +10,8 @@ import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnection;
+import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnectionContext;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
@@ -26,9 +28,9 @@ public class LoginSceneController implements LoginSceneListener {
     private final Logger LOGGER = LogManager.getLogger();
     private final SceneNavigator navigator;
     private Client client;
-
     public  LoginSceneController(SceneNavigator navigator) {
         this.navigator = navigator;
+
     }
 
 
@@ -39,6 +41,7 @@ public class LoginSceneController implements LoginSceneListener {
         Platform.runLater(() -> {
             if(status == ConnectionStatus.ACCEPT) {
                 AlertUtils.info("Logged In", status.message()).showAndWait();
+                navigator.getFactory().getServersController().addServer(new ServerConnectionContext(new ServerConnection("pota", "pota"), client));
                 navigator.showChatScene(client);
             }else {
                 client.disconnect(DisconnectReason.HANDSHAKE_FAILED);
