@@ -1,8 +1,7 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
 
-import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnectionContext;
-import com.yahia.anotherchatapplicatoin.ui.controllers.ActiveServersSceneController;
+import com.yahia.anotherchatapplicatoin.protocol.server.ClientConnection;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -14,7 +13,7 @@ import javafx.scene.layout.BorderPane;
 import java.util.Objects;
 
 public class ActiveServersScene {
-    private final ListView<ServerConnectionContext> serversListView;
+    private final ListView<ClientConnection> serversListView;
     private final Scene serversScene;
     private final BorderPane serversBorderPane;
     private final Button returnButton;

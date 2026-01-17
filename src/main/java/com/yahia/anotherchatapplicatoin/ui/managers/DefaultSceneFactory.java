@@ -4,9 +4,11 @@ import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.ui.controllers.ActiveServersSceneController;
 import com.yahia.anotherchatapplicatoin.ui.controllers.ChatSceneController;
 import com.yahia.anotherchatapplicatoin.ui.controllers.LoginSceneController;
+import com.yahia.anotherchatapplicatoin.ui.controllers.ServerLauncherController;
 import com.yahia.anotherchatapplicatoin.ui.scenes.ActiveServersScene;
 import com.yahia.anotherchatapplicatoin.ui.scenes.ChatScene;
 import com.yahia.anotherchatapplicatoin.ui.scenes.LoginScene;
+import com.yahia.anotherchatapplicatoin.ui.scenes.ServerLauncherScene;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
@@ -33,7 +35,7 @@ public class DefaultSceneFactory implements SceneFactory{
     @Override
     public LoginScene createLoginScene() {
         LoginScene loginScene = new LoginScene();
-        loginScene.wireController(new LoginSceneController(navigator), stage);
+        loginScene.wireController(new LoginSceneController(navigator));
         return loginScene;
     }
 
@@ -50,5 +52,12 @@ public class DefaultSceneFactory implements SceneFactory{
         ActiveServersScene serversScene = new ActiveServersScene();
         serversScene.wireController(this.serversSceneController);
         return serversScene;
+    }
+
+    @Override
+    public ServerLauncherScene createServerLauncherScene() {
+        ServerLauncherScene launcherScene = new ServerLauncherScene();
+        launcherScene.wireController(new ServerLauncherController());
+        return launcherScene;
     }
 }

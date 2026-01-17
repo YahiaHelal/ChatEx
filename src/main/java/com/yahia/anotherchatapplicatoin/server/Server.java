@@ -55,6 +55,12 @@ public class Server {
         registerHandlers();
     }
 
+    public String getIp() {
+        return SocketUtils.getServerSocketAddress(serverSocket);
+    }
+    public int getPort() {
+        return SERVER_PORT;
+    }
     public void start() {
         try {
             run();
@@ -90,7 +96,7 @@ public class Server {
     }
 
 
-    private void run() throws IOException {
+    private void run() throws IOException, NullPointerException {
         serverSocket = new ServerSocket(SERVER_PORT);
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", SocketUtils.getServerSocketAddress(serverSocket), SERVER_PORT));
     }

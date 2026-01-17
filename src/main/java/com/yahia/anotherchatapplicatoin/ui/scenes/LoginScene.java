@@ -16,6 +16,7 @@ public class LoginScene extends AbstractLoginScene {
     private TextField portTextField;
     private Button loginButton;
     private Button connectedServersButton;
+    private Button launchServerButton;
 
     private GridPane loginGrid;
     private Scene loginScene;
@@ -42,7 +43,7 @@ public class LoginScene extends AbstractLoginScene {
 
 
     @Override
-    public void wireController(LoginSceneListener listener, Stage stage) {
+    public void wireController(LoginSceneListener listener) {
         this.loginSceneListener = listener;
         setUpActions();
     }
@@ -54,6 +55,7 @@ public class LoginScene extends AbstractLoginScene {
         portTextField = new TextField();
         loginButton = new Button("Login");
         connectedServersButton = new Button("Connected Servers");
+        launchServerButton = new Button("Launch A Server");
         loginGrid = new GridPane();
         loginScene = new Scene(loginGrid, WIDTH, HEIGHT);
         usernameTextField.setPromptText("Username");
@@ -69,6 +71,7 @@ public class LoginScene extends AbstractLoginScene {
         loginGrid.add(portTextField, 0, 2);
         loginGrid.add(loginButton, 0, 3);
         loginGrid.add(connectedServersButton, 0, 4);
+        loginGrid.add(launchServerButton, 0, 5);
         LayoutUtils.setLoginGridSpacing(loginGrid);
     }
 
@@ -77,8 +80,9 @@ public class LoginScene extends AbstractLoginScene {
     @Override
     protected void applyConstraints() {
         loginButton.setPrefWidth(200);
-        usernameTextField.setPrefWidth(200);
         connectedServersButton.setPrefWidth(200);
+        launchServerButton.setPrefWidth(200);
+        usernameTextField.setPrefWidth(200);
     }
     @Override
     protected void setUpActions() {
@@ -88,6 +92,10 @@ public class LoginScene extends AbstractLoginScene {
 
         connectedServersButton.setOnAction(actionEvent -> {
             loginSceneListener.onConnectedServersButtonClicked();
+        });
+
+        launchServerButton.setOnAction(actionEvent -> {
+            loginSceneListener.onLaunchServerButtonClicked();
         });
     }
 }

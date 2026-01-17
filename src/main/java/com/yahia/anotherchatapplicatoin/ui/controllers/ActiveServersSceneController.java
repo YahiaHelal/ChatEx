@@ -1,12 +1,12 @@
 package com.yahia.anotherchatapplicatoin.ui.controllers;
-import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnectionContext;
+import com.yahia.anotherchatapplicatoin.protocol.server.ClientConnection;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public class ActiveServersSceneController implements ActiveServersSceneListener {
-    private final ObservableList<ServerConnectionContext> serversList = FXCollections.observableArrayList();
+    private final ObservableList<ClientConnection> serversList = FXCollections.observableArrayList();
     private final SceneNavigator navigator;
 
 
@@ -15,12 +15,12 @@ public class ActiveServersSceneController implements ActiveServersSceneListener 
     }
 
     @Override
-    public ObservableList<ServerConnectionContext> getServersList() {
+    public ObservableList<ClientConnection> getServersList() {
         return this.serversList;
     }
 
     @Override
-    public void addServer(ServerConnectionContext connectionContext) {
+    public void addServer(ClientConnection connectionContext) {
         if(!serversList.contains(connectionContext)) {
             serversList.add(connectionContext);
         }

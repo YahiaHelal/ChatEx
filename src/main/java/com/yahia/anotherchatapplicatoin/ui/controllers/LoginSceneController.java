@@ -3,16 +3,13 @@ package com.yahia.anotherchatapplicatoin.ui.controllers;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseDecoder;
-import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.ConnectionStatus;
-import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.protocol.server.ClientConnection;
 import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnection;
-import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnectionContext;
-import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
+import com.yahia.anotherchatapplicatoin.server.Server;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
 import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
@@ -20,14 +17,16 @@ import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeRequest;
 import javafx.application.Platform;
 
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoginSceneController implements LoginSceneListener {
     private final Logger LOGGER = LogManager.getLogger();
     private final SceneNavigator navigator;
+    private ServerConnection pendingServerInfo;
+
     private Client client;
+
     public  LoginSceneController(SceneNavigator navigator) {
         this.navigator = navigator;
 
@@ -41,7 +40,8 @@ public class LoginSceneController implements LoginSceneListener {
         Platform.runLater(() -> {
             if(status == ConnectionStatus.ACCEPT) {
                 AlertUtils.info("Logged In", status.message()).showAndWait();
-                navigator.getFactory().getServersController().addServer(new ServerConnectionContext(new ServerConnection("pota", "pota"), client));
+                ClientConnection clientConnection = new ClientConnection(pendingServerInfo, client);
+                navigator.getFactory().getServersController().addServer(clientConnection);
                 navigator.showChatScene(client);
             }else {
                 client.disconnect(DisconnectReason.HANDSHAKE_FAILED);
@@ -49,6 +49,8 @@ public class LoginSceneController implements LoginSceneListener {
             }
         });
     }
+
+
     private void sendHandShake() {
         JsonHandshakeRequestEncoder encoder = new JsonHandshakeRequestEncoder();
         String username = encoder.encode(new HandshakeRequest(client.getClientName()));
@@ -59,6 +61,7 @@ public class LoginSceneController implements LoginSceneListener {
     public void onLoginButtonClicked(String username, String ipAddress, String port) {
         try {
             client = new Client(username, ipAddress, Integer.parseInt(port));
+            pendingServerInfo = new ServerConnection(ipAddress, port);
             initializeHandShakeListener();
             sendHandShake();
         }catch(Exception e) {
@@ -70,5 +73,10 @@ public class LoginSceneController implements LoginSceneListener {
     @Override
     public void onConnectedServersButtonClicked() {
         navigator.showActiveServersScene(navigator, client);
+    }
+
+    @Override
+    public void onLaunchServerButtonClicked() {
+        navigator.showServerLauncherScene();
     }
 }

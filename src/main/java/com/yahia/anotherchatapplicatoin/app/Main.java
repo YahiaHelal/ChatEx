@@ -10,7 +10,7 @@ public class Main {
         //TODO: Each server may have up to machine threads number of chat rooms
         //TODO: List all available servers for each connected client to choose from
 
-        Server chatServer = new Server(8080);
+        Server chatServer = new Server(8081);
         chatServer.start();
     }
 }

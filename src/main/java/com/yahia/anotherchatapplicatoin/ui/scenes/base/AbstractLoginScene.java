@@ -11,7 +11,7 @@ public abstract class AbstractLoginScene {
         buildUi();
     }
 
-    public abstract void wireController(LoginSceneListener listener ,Stage stage);
+    public abstract void wireController(LoginSceneListener listener);
     protected abstract void initControls();
     protected abstract void buildUi();
     protected abstract void setUpActions();
