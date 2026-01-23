@@ -1,7 +1,7 @@
 package com.yahia.anotherchatapplicatoin.app;
 
-import com.yahia.anotherchatapplicatoin.ui.managers.DefaultSceneFactory;
-import com.yahia.anotherchatapplicatoin.ui.managers.SceneManager;
+import com.yahia.anotherchatapplicatoin.ui.managers.ui.DefaultSceneFactory;
+import com.yahia.anotherchatapplicatoin.ui.managers.ui.SceneManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
 

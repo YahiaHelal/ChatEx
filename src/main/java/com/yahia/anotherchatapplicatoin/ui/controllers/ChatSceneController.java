@@ -4,7 +4,7 @@ import com.yahia.anotherchatapplicatoin.client.Client;
 
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectReason;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ChatSceneListener;
-import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
+import com.yahia.anotherchatapplicatoin.ui.managers.ui.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import javafx.application.Platform;
@@ -65,7 +65,7 @@ public class ChatSceneController implements ChatSceneListener {
 
     private void initListeners() {
         client.setMessageHandler(this::onMessageReceived);
-        client.setServerEventsListener(this::onDisconnect);
+        client.setDisconnectListener(this::onDisconnect);
     }
 
 

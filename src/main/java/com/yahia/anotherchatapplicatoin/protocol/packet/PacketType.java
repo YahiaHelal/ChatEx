@@ -8,7 +8,7 @@ public enum PacketType {
     BROADCAST_MESSAGE,
     PRIVATE_MESSAGE,
 
-    SERVER_STATUS,
+    FIN,
 
     DISCONNECT_REQUEST,
 }

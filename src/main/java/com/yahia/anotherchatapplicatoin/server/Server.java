@@ -1,8 +1,10 @@
 package com.yahia.anotherchatapplicatoin.server;
 
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.fin.JsonFinEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeRequestDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.terminate.FinPacket;
 import com.yahia.anotherchatapplicatoin.server.accept.ServerHandshakeContext;
 import com.yahia.anotherchatapplicatoin.server.accept.ServerPacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.server.session.ServerClientHandler;
@@ -16,6 +18,8 @@ import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
+import com.yahia.anotherchatapplicatoin.ui.managers.network.ServerConnectionManager;
+import com.yahia.anotherchatapplicatoin.ui.managers.network.ServersManager;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeRequest;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeResponse;
@@ -41,18 +45,30 @@ public class Server {
     private final Logger LOGGER;
     private ServerSocket serverSocket;
     private final ServerPacketHandlerRegistry serverHandlerRegistry;
+    private final String serverName;
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
     //TODO: system-wise responsibility
-    public Server(int serverPort) {
+    public Server(int serverPort, String serverName){
         this.SERVER_PORT = serverPort;
         CLIENTS = ConcurrentHashMap.newKeySet();
         CLIENT_NAMES = ConcurrentHashMap.newKeySet();
         LOGGER = LogManager.getLogger();
-
         serverHandlerRegistry = new ServerPacketHandlerRegistry();
+        this.serverName = serverName;
         registerHandlers();
+    }
+
+
+    //TODO: better way instead of sending dummy data
+    public void broadcastTermination() {
+        JsonFinEncoder encoder = new JsonFinEncoder();
+        String info = encoder.encode(new FinPacket(serverName));
+        broadCastPacket(new CommunicationPacket(PacketType.FIN, info));
+    }
+    public void terminate() throws IOException {
+        serverSocket.close();
     }
 
     public String getIp() {
@@ -61,6 +77,8 @@ public class Server {
     public int getPort() {
         return SERVER_PORT;
     }
+
+
     public void start() {
         try {
             run();
@@ -90,13 +108,12 @@ public class Server {
         CLIENT_NAMES.add(username);
     }
 
-
     private void registerHandlers() {
         serverHandlerRegistry.register(PacketType.HANDSHAKE_REQUEST, this::handleHandshakeRequest);
     }
 
 
-    private void run() throws IOException, NullPointerException {
+    private void run() throws IOException {
         serverSocket = new ServerSocket(SERVER_PORT);
         LOGGER.log(Level.INFO, String.format("Server running on %s:%d", SocketUtils.getServerSocketAddress(serverSocket), SERVER_PORT));
     }
@@ -145,10 +162,13 @@ public class Server {
             while(true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
+                    String serverKey = String.format("%s:%s", SocketUtils.getSocketAddress(clientSocket), getPort());
+                    ServerConnectionManager.addConnection(serverKey, clientSocket);
                     LOGGER.log(Level.INFO, "Server receives a new connection");
                     handleClient(clientSocket);
                 }catch (IOException e) {
-                    LOGGER.log(Level.WARNING, "Server couldn't connect to client");
+                    LOGGER.log(Level.WARNING, "Server couldn't connect to client due to closing server socket");
+                    break;
                 }
             }
         }).start();

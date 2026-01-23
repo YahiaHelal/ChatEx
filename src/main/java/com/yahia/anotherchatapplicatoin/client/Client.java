@@ -7,6 +7,7 @@ import com.yahia.anotherchatapplicatoin.client.listeners.DisconnectListener;
 import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEncoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.fin.JsonFinDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.handshake.JsonHandshakeResponseDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.messinging.JsonBroadcastMessageEncoder;
@@ -18,6 +19,7 @@ import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.server.Server;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
 import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
@@ -26,6 +28,9 @@ import com.yahia.anotherchatapplicatoin.protocol.messaging.BroadCastMessage;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,11 +40,12 @@ public class Client extends AbstractClient {
     private String clientName;
     private MessageListener messageListener;
     private HandshakeListener handShakeListener;
-    private DisconnectListener serverEventsListener;
+    private DisconnectListener disconnectListener;
     private MessageSender sender;
     private MessageReceiver receiver;
     private volatile DisconnectReason disconnectReason;
     private final PacketHandlerRegistry handlerRegistry;
+
 
 
     //TODO: client fetches the server's old messages when connected, from a NoSQL DB
@@ -57,8 +63,8 @@ public class Client extends AbstractClient {
         this.handShakeListener = handShakeListener;
     }
 
-    public void setServerEventsListener(DisconnectListener serverEventsListener) {
-        this.serverEventsListener = serverEventsListener;
+    public void setDisconnectListener(DisconnectListener serverEventsListener) {
+        this.disconnectListener = serverEventsListener;
     }
 
     public void sendMessage(CommunicationPacket packet) {
@@ -91,6 +97,7 @@ public class Client extends AbstractClient {
         if(reason != DisconnectReason.SERVER_SHUTDOWN && reason != DisconnectReason.HANDSHAKE_FAILED) {
             requestDisconnect();
         }
+        notifyDisconnectListener(reason);
         closeClientSocket();
     }
 
@@ -130,6 +137,7 @@ public class Client extends AbstractClient {
     protected void registerHandlers() {
         handlerRegistry.register(PacketType.HANDSHAKE_RESPONSE, this::handleHandShakeResponse);
         handlerRegistry.register(PacketType.BROADCAST_MESSAGE, this::handleBroadCastMessage);
+        handlerRegistry.register(PacketType.FIN, this::handleServerShutdown);
     }
 
 
@@ -142,10 +150,6 @@ public class Client extends AbstractClient {
             }
         }catch (IOException e) {
             LOGGER.log(Level.SEVERE, String.format("Client socket has been closed: %s", e.getMessage()));
-        }finally {
-            LOGGER.log(Level.SEVERE, "Server dies");
-            disconnect(DisconnectReason.SERVER_SHUTDOWN);
-            notifyDisconnectListener(disconnectReason);
         }
 
     }
@@ -172,9 +176,15 @@ public class Client extends AbstractClient {
         notifyMessageListener(broadCastMessage);
     }
 
+    private void handleServerShutdown(CommunicationPacket packet) {
+        JsonFinDecoder decoder = new JsonFinDecoder();
+        LOGGER.log(Level.SEVERE, String.format("Server %s dies", decoder.decode(packet.payload())));
+        disconnect(DisconnectReason.SERVER_SHUTDOWN);
+    }
+
     private void notifyDisconnectListener(DisconnectReason reason) {
-        if(serverEventsListener != null) {
-            serverEventsListener.onDisconnect(reason);
+        if(disconnectListener != null) {
+            disconnectListener.onDisconnect(reason);
         }
     }
 

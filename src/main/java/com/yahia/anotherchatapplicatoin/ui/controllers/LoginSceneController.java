@@ -9,9 +9,8 @@ import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
 import com.yahia.anotherchatapplicatoin.protocol.server.ClientConnection;
 import com.yahia.anotherchatapplicatoin.protocol.server.ServerConnection;
-import com.yahia.anotherchatapplicatoin.server.Server;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.LoginSceneListener;
-import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
+import com.yahia.anotherchatapplicatoin.ui.managers.ui.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.utils.alerts.AlertUtils;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.protocol.handshake.HandshakeRequest;
@@ -29,7 +28,6 @@ public class LoginSceneController implements LoginSceneListener {
 
     public  LoginSceneController(SceneNavigator navigator) {
         this.navigator = navigator;
-
     }
 
 

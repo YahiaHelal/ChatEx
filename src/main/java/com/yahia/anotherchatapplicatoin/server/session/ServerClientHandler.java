@@ -5,9 +5,13 @@ import com.yahia.anotherchatapplicatoin.protocol.codec.packet.json.JsonPacketEnc
 import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestDecoder;
 import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
 import com.yahia.anotherchatapplicatoin.protocol.json.JsonHelper;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageReceiver;
+import com.yahia.anotherchatapplicatoin.protocol.messaging.MessageSender;
 import com.yahia.anotherchatapplicatoin.protocol.packet.CommunicationPacket;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketHandlerRegistry;
 import com.yahia.anotherchatapplicatoin.protocol.packet.PacketType;
+import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageReceiver;
+import com.yahia.anotherchatapplicatoin.transport.tcp.SocketMessageSender;
 import com.yahia.anotherchatapplicatoin.utils.logging.LogManager;
 import com.yahia.anotherchatapplicatoin.server.Server;
 import com.yahia.anotherchatapplicatoin.utils.network.SocketUtils;
@@ -22,29 +26,26 @@ import java.util.logging.Logger;
 
 public class ServerClientHandler implements Runnable {
     private final Logger LOGGER;
-    private final Socket CLIENT_SOCKET;
-    private final Server CHAT_SERVER; // TODO: client can move from one server to another
-    private final PrintWriter out;
+    private final MessageSender sender;
+    private final MessageReceiver receiver;
+    private final Server CHAT_SERVER;
     private String clientUsername;
     private final PacketHandlerRegistry handlerRegistry;
 
     //NOTE: only fired when a new client is authenticated by the HandShake
     public ServerClientHandler(Socket clientSocket, Server chatServer, String clientUsername) throws IOException {
-        this.CLIENT_SOCKET = clientSocket;
+        sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
+        receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
         this.CHAT_SERVER = chatServer;
         this.clientUsername = clientUsername;
         LOGGER = LogManager.getLogger();
-        out = new PrintWriter(clientSocket.getOutputStream(), true);
         handlerRegistry = new PacketHandlerRegistry();
         registerHandlers();
     }
 
-
-
+    //TODO: replace socket dependency with socket sender interface
     public void sendMessageToClient(CommunicationPacket packet) {
-        JsonPacketEncoder encoder = new JsonPacketEncoder();
-        out.println(encoder.encode(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, packet.payload())));
-        LOGGER.log(Level.INFO, String.format("Message delivered to client %s successfully", SocketUtils.getSocketAddress(CLIENT_SOCKET)));
+        sender.send(packet);
     }
 
 
@@ -74,13 +75,9 @@ public class ServerClientHandler implements Runnable {
 
     @Override
     public void run() {
+        CommunicationPacket clientPacket;
         try {
-            BufferedReader in = new BufferedReader(new InputStreamReader(CLIENT_SOCKET.getInputStream()));
-            JsonPacketDecoder packetDecoder = new JsonPacketDecoder();
-            String msg;
-            while((msg = in.readLine()) != null) {
-                LOGGER.log(Level.INFO, String.format("Server received a message: %s from %s", msg, SocketUtils.getSocketAddress(CLIENT_SOCKET)));
-                CommunicationPacket clientPacket =  packetDecoder.decode(msg);
+            while((clientPacket = receiver.receive()) != null) {
                 handlerRegistry.get(clientPacket.type()).handlePacket(clientPacket);
             }
         }catch (IOException e) {

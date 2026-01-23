@@ -40,4 +40,8 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.anotherchatapplicatoin.server.session;
     exports com.yahia.anotherchatapplicatoin.client.base;
     opens com.yahia.anotherchatapplicatoin.client.base to javafx.fxml;
+    exports com.yahia.anotherchatapplicatoin.ui.managers.network;
+    opens com.yahia.anotherchatapplicatoin.ui.managers.network to javafx.fxml;
+    opens com.yahia.anotherchatapplicatoin.protocol.terminate;
+    exports com.yahia.anotherchatapplicatoin.protocol.terminate;
 }

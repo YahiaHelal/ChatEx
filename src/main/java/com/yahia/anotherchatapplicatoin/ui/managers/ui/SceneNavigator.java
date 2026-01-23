@@ -1,6 +1,7 @@
-package com.yahia.anotherchatapplicatoin.ui.managers;
+package com.yahia.anotherchatapplicatoin.ui.managers.ui;
 
 import com.yahia.anotherchatapplicatoin.client.Client;
+import com.yahia.anotherchatapplicatoin.server.Server;
 
 public interface SceneNavigator {
     void showLoginScene();

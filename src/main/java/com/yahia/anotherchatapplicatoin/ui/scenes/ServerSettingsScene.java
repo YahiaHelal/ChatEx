@@ -1,43 +1,39 @@
 package com.yahia.anotherchatapplicatoin.ui.scenes;
 
-import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ServerLauncherListener;
+import com.yahia.anotherchatapplicatoin.server.Server;
+import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ServerSettingsListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 
-import java.util.Objects;
-
-public class ServerLauncherScene {
+public class ServerSettingsScene {
 
     private GridPane root;
     private TextField ipTextField;
     private TextField portTextField;
+    private TextField serverNameTextField;
     private Button launchButton;
+    private Button terminateButton;
     private Scene scene;
-//    private ImageView returnIcon;
-//    private Button returnButton;
 
-    private ServerLauncherListener serverLauncherListener;
+    private ServerSettingsListener serverSettingsListener;
 
-    public ServerLauncherScene() {
+    public ServerSettingsScene() {
         initControls();
         applyConstraints();
-        setupActions();
         buildUi();
-
     }
 
     public Scene getScene() {
         return scene;
     }
 
-    public void wireController(ServerLauncherListener listener) {
-        this.serverLauncherListener = listener;
+    public void wireController(ServerSettingsListener listener) {
+        this.serverSettingsListener = listener;
+        setupActions();
     }
 
 
@@ -49,23 +45,21 @@ public class ServerLauncherScene {
 
         portTextField = new TextField();
         portTextField.setPromptText("Server Port (e.g. 8080)");
+        serverNameTextField = new TextField();
+        serverNameTextField.setPromptText("Server Name");
 
         launchButton = new Button("Launch Server");
-
+        terminateButton = new Button("Terminate Server");
         scene = new Scene(root, 600, 400);
 
-//        returnIcon = new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/return.png"))));
-//        returnIcon.setFitHeight(16);
-//        returnIcon.setFitWidth(16);
-//
-//        returnButton = new Button();
-//        returnButton.setGraphic(returnIcon);
     }
 
     private void buildUi() {
         root.add(ipTextField, 0, 0);
         root.add(portTextField, 0, 1);
-        root.add(launchButton, 0, 2);
+        root.add(serverNameTextField, 0, 2);
+        root.add(launchButton, 0, 3);
+        root.add(terminateButton, 0, 4);
     }
 
     private void applyConstraints() {
@@ -76,14 +70,25 @@ public class ServerLauncherScene {
 
         ipTextField.setPrefWidth(260);
         portTextField.setPrefWidth(260);
+        serverNameTextField.setPrefWidth(260);
+
         launchButton.setPrefWidth(260);
         launchButton.setPrefHeight(35);
+
+        terminateButton.setPrefWidth(260);
+        terminateButton.setPrefHeight(35);
     }
 
     private void setupActions() {
         launchButton.setOnAction(event -> {
-            if (serverLauncherListener != null) {
-                serverLauncherListener.onLaunchButtonClicked(portTextField.getText());
+            if (serverSettingsListener != null) {
+                serverSettingsListener.onLaunch(serverNameTextField.getText(), portTextField.getText());
+            }
+        });
+
+        terminateButton.setOnAction(actionEvent -> {
+            if(serverSettingsListener != null) {
+                serverSettingsListener.onTerminate(serverNameTextField.getText());
             }
         });
     }

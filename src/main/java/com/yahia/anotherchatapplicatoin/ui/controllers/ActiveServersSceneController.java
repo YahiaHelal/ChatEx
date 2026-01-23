@@ -1,6 +1,6 @@
 package com.yahia.anotherchatapplicatoin.ui.controllers;
 import com.yahia.anotherchatapplicatoin.protocol.server.ClientConnection;
-import com.yahia.anotherchatapplicatoin.ui.managers.SceneNavigator;
+import com.yahia.anotherchatapplicatoin.ui.managers.ui.SceneNavigator;
 import com.yahia.anotherchatapplicatoin.ui.scenes.listeners.ActiveServersSceneListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

@@ -1,4 +1,8 @@
 package com.yahia.anotherchatapplicatoin.app;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.disconnect.JsonDisconnectRequestEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.codec.payload.json.fin.JsonFinEncoder;
+import com.yahia.anotherchatapplicatoin.protocol.disconnect.DisconnectRequest;
+import com.yahia.anotherchatapplicatoin.protocol.terminate.FinPacket;
 import com.yahia.anotherchatapplicatoin.server.Server;
 
 public class Main {
@@ -10,7 +14,9 @@ public class Main {
         //TODO: Each server may have up to machine threads number of chat rooms
         //TODO: List all available servers for each connected client to choose from
 
-        Server chatServer = new Server(8081);
-        chatServer.start();
+        String x = new JsonFinEncoder().encode(new FinPacket(""));
+//        String y = new JsonDisconnectRequestEncoder().encode(new DisconnectRequest("uahoa"));
+//        Server chatServer = new Server(8081);
+//        chatServer.start();
     }
 }
