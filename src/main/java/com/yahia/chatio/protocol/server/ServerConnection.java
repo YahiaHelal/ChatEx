@@ -1,7 +1,7 @@
 package com.yahia.chatio.protocol.server;
 
-public record ServerConnection(String ip, String port) {
+public record ServerConnection(String ip, int port, String name) {
     public String id() {
-        return String.format("%s:%s", ip, port);
+        return String.format("[%s] %s:%d", name, ip, port);
     }
 }

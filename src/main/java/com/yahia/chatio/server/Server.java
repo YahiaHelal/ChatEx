@@ -4,6 +4,7 @@ import com.yahia.chatio.protocol.codec.payload.json.fin.JsonFinEncoder;
 import com.yahia.chatio.protocol.codec.payload.json.handshake.JsonHandshakeRequestDecoder;
 import com.yahia.chatio.protocol.codec.payload.json.handshake.JsonHandshakeResponseEncoder;
 import com.yahia.chatio.protocol.codec.payload.json.messaging.JsonBroadcastMessageEncoder;
+import com.yahia.chatio.protocol.server.ServerConnection;
 import com.yahia.chatio.protocol.terminate.FinPacket;
 import com.yahia.chatio.server.accept.ServerHandshakeContext;
 import com.yahia.chatio.server.accept.ServerPacketHandlerRegistry;
@@ -37,24 +38,22 @@ import java.util.logging.Logger;
 //TODO: make the server more like an API, that handles jobs like register/un-register clients, processing handshakes and stuff
 public class Server {
 
-    private final int SERVER_PORT;
+    private final ServerConnection serverConnection;
     private final Set<ServerClientHandler> CLIENTS;
     private final Set<String> CLIENT_NAMES;
     private final Logger LOGGER;
     private ServerSocket serverSocket;
     private final ServerPacketHandlerRegistry serverHandlerRegistry;
-    private final String serverName;
 
     //TODO: new server fetches the sent messages from db when initialized
     //TODO: each server deals with it's own data transfer currently
     //TODO: system-wise responsibility
-    public Server(int serverPort, String serverName){
-        this.SERVER_PORT = serverPort;
+    public Server(ServerConnection connection){
+        this.serverConnection = connection;
         CLIENTS = ConcurrentHashMap.newKeySet();
         CLIENT_NAMES = ConcurrentHashMap.newKeySet();
         LOGGER = LogManager.getLogger();
         serverHandlerRegistry = new ServerPacketHandlerRegistry();
-        this.serverName = serverName;
         registerHandlers();
     }
 
@@ -62,7 +61,7 @@ public class Server {
     //TODO: better way instead of sending dummy data
     public void broadcastTermination() {
         JsonFinEncoder encoder = new JsonFinEncoder();
-        String info = encoder.encode(new FinPacket(serverName));
+        String info = encoder.encode(new FinPacket(serverConnection.name()));
         broadCastPacket(new CommunicationPacket(PacketType.FIN, info));
     }
     public void terminate() throws IOException {
@@ -73,7 +72,7 @@ public class Server {
         return SocketUtils.getServerSocketAddress(serverSocket);
     }
     public int getPort() {
-        return SERVER_PORT;
+        return serverConnection.port();
     }
 
 
@@ -82,7 +81,7 @@ public class Server {
             run();
             listen();
         }catch (IOException e) {
-            LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s:%d",SocketUtils.getServerSocketAddress(serverSocket), this.SERVER_PORT));
+            LOGGER.log(Level.SEVERE, String.format("Error creating server socket %s", serverConnection.id()));
         }
     }
 
@@ -112,8 +111,8 @@ public class Server {
 
 
     private void run() throws IOException {
-        serverSocket = new ServerSocket(SERVER_PORT);
-        LOGGER.log(Level.INFO, String.format("Server running on %s:%d", SocketUtils.getServerSocketAddress(serverSocket), SERVER_PORT));
+        serverSocket = new ServerSocket(serverConnection.port());
+        LOGGER.log(Level.INFO, String.format("Server running on %s", serverConnection.id()));
     }
 
     private ConnectionStatus checkStatus(HandshakeRequest handShakeRequest) {

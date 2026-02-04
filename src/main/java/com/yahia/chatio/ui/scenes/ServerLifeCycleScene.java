@@ -1,6 +1,7 @@
 package com.yahia.chatio.ui.scenes;
 
-import com.yahia.chatio.ui.scenes.listeners.ServerSettingsListener;
+import com.yahia.chatio.protocol.server.ServerConnection;
+import com.yahia.chatio.ui.scenes.listeners.ServerLifeCycleListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,7 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
-public class ServerLauncherScene {
+public class ServerLifeCycleScene {
 
     private GridPane root;
     private TextField portTextField;
@@ -17,9 +18,10 @@ public class ServerLauncherScene {
     private Button terminateButton;
     private Scene scene;
 
-    private ServerSettingsListener serverSettingsListener;
+    private ServerLifeCycleListener serverLifeCycleListener;
 
-    public ServerLauncherScene() {
+    //TODO: add server capacity as a field entered by the user
+    public ServerLifeCycleScene() {
         initControls();
         applyConstraints();
         buildUi();
@@ -29,8 +31,8 @@ public class ServerLauncherScene {
         return scene;
     }
 
-    public void wireController(ServerSettingsListener listener) {
-        this.serverSettingsListener = listener;
+    public void wireController(ServerLifeCycleListener listener) {
+        this.serverLifeCycleListener = listener;
         setupActions();
     }
 
@@ -38,8 +40,6 @@ public class ServerLauncherScene {
     private void initControls() {
         root = new GridPane();
 
-        portTextField = new TextField();
-        portTextField.setPromptText("Server Port (e.g. 8080)");
         serverNameTextField = new TextField();
         serverNameTextField.setPromptText("Server Name");
 
@@ -50,10 +50,9 @@ public class ServerLauncherScene {
     }
 
     private void buildUi() {
-        root.add(portTextField, 0, 0);
-        root.add(serverNameTextField, 0, 1);
-        root.add(launchButton, 0, 2);
-        root.add(terminateButton, 0, 3);
+        root.add(serverNameTextField, 0, 0);
+        root.add(launchButton, 0, 1);
+        root.add(terminateButton, 0, 2);
     }
 
     private void applyConstraints() {
@@ -62,7 +61,6 @@ public class ServerLauncherScene {
         root.setVgap(15);
         root.setPadding(new Insets(20));
 
-        portTextField.setPrefWidth(260);
         serverNameTextField.setPrefWidth(260);
 
         launchButton.setPrefWidth(260);
@@ -72,16 +70,17 @@ public class ServerLauncherScene {
         terminateButton.setPrefHeight(35);
     }
 
+
     private void setupActions() {
         launchButton.setOnAction(event -> {
-            if (serverSettingsListener != null) {
-                serverSettingsListener.onLaunch(serverNameTextField.getText(), portTextField.getText());
+            if (serverLifeCycleListener != null) {
+                serverLifeCycleListener.onLaunch(serverNameTextField.getText());
             }
         });
 
         terminateButton.setOnAction(actionEvent -> {
-            if(serverSettingsListener != null) {
-                serverSettingsListener.onTerminate(serverNameTextField.getText());
+            if(serverLifeCycleListener != null) {
+                serverLifeCycleListener.onTerminate(serverNameTextField.getText());
             }
         });
     }

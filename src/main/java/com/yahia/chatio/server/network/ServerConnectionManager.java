@@ -1,29 +1,38 @@
 package com.yahia.chatio.server.network;
 
 import com.yahia.chatio.protocol.server.ServerConnection;
+import com.yahia.chatio.server.Server;
 
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Collections.*;
 
 public class ServerConnectionManager {
-    private static final Map<String, ArrayList<Socket>> activeConnections = new HashMap<>();
-    private static final Map<String, ServerConnection> runningServersInfo = new HashMap<>();
-
+    private static final Map<ServerConnection, Server> runningServers = new ConcurrentHashMap<>();
+    private static final Map<String, ServerConnection> serverInfo = new ConcurrentHashMap<>();
     private ServerConnectionManager() {}
 
 
-    public static boolean addServerInfo(String serverName, ServerConnection connection) {
-        if(runningServersInfo.containsKey(serverName)) return false; // trying to run server with same name
-        runningServersInfo.put(serverName, connection);
-        return true;
+    public static void addServer(ServerConnection connection, Server server) {
+        serverInfo.put(connection.name(), connection);
+        runningServers.put(connection,server);
     }
 
-    public static void addConnection(String serverKey, Socket socket) {
-        if(!activeConnections.containsKey(serverKey)) activeConnections.put(serverKey, new ArrayList<>());
-        activeConnections.get(serverKey).add(socket);
+    public static Server getServer(ServerConnection connection) {
+        return runningServers.get(connection);
     }
 
+    public static boolean isServerRunning(ServerConnection connection) {
+        return runningServers.containsKey(connection);
+    }
+
+    public static void removeServer(ServerConnection connection) {
+        runningServers.remove(connection);
+    }
+
+    public static ServerConnection getServerConnection(String name) {
+        return serverInfo.get(name);
+    }
 
 }

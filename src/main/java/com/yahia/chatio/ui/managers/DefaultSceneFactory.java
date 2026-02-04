@@ -4,11 +4,11 @@ import com.yahia.chatio.client.Client;
 import com.yahia.chatio.ui.controllers.ActiveServersSceneController;
 import com.yahia.chatio.ui.controllers.ChatSceneController;
 import com.yahia.chatio.ui.controllers.LoginSceneController;
-import com.yahia.chatio.ui.controllers.ServerLauncherController;
+import com.yahia.chatio.ui.controllers.ServerLifeCycleController;
 import com.yahia.chatio.ui.scenes.ActiveServersScene;
 import com.yahia.chatio.ui.scenes.ChatScene;
 import com.yahia.chatio.ui.scenes.LoginScene;
-import com.yahia.chatio.ui.scenes.ServerLauncherScene;
+import com.yahia.chatio.ui.scenes.ServerLifeCycleScene;
 import com.yahia.chatio.ui.scenes.listeners.ActiveServersSceneListener;
 import javafx.stage.Stage;
 
@@ -54,9 +54,9 @@ public class DefaultSceneFactory implements SceneFactory{
     }
 
     @Override
-    public ServerLauncherScene createServerLauncherScene() {
-        ServerLauncherScene launcherScene = new ServerLauncherScene();
-        launcherScene.wireController(new ServerLauncherController());
+    public ServerLifeCycleScene createServerLauncherScene() {
+        ServerLifeCycleScene launcherScene = new ServerLifeCycleScene();
+        launcherScene.wireController(new ServerLifeCycleController());
         return launcherScene;
     }
 }

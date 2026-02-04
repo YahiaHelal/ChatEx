@@ -1,7 +1,7 @@
 package com.yahia.chatio.storage.message;
 
 
-// abstract message -> message
+//NOTE: make messages events
 public abstract class Message {
 
 }
