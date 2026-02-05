@@ -2,6 +2,10 @@ package com.yahia.chatio.app;
 import com.yahia.chatio.protocol.codec.payload.json.fin.JsonFinEncoder;
 import com.yahia.chatio.protocol.terminate.FinPacket;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
 public class Main {
     public static void main(String[] args) {
         //TODO: Auto-discovery of the server on LAN (clients won't need to type the Server's IP)
@@ -11,9 +15,15 @@ public class Main {
         //TODO: Each server may have up to machine threads number of chat rooms
         //TODO: List all available servers for each connected client to choose from
 
-        String x = new JsonFinEncoder().encode(new FinPacket(""));
-//        String y = new JsonDisconnectRequestEncoder().encode(new DisconnectRequest("uahoa"));
-//        Server chatServer = new Server(8081);
-//        chatServer.start();
+        try {
+            String hostName = InetAddress.getLocalHost().getHostName();
+            System.out.printf(String.valueOf(InetAddress.getByName(hostName)));
+        } catch (UnknownHostException e) {
+            try {
+                System.out.printf(InetAddress.getLocalHost().getHostAddress());
+            }catch (UnknownHostException ex) {
+                System.out.println("unkown host");
+            }
+        }
     }
 }

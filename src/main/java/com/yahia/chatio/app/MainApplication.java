@@ -1,5 +1,6 @@
 package com.yahia.chatio.app;
 
+import com.yahia.chatio.network.mdns.MdnsAnnouncer;
 import com.yahia.chatio.ui.managers.DefaultSceneFactory;
 import com.yahia.chatio.ui.managers.SceneManager;
 import javafx.application.Application;
@@ -16,6 +17,8 @@ public class MainApplication extends Application {
         sceneManager.showLoginScene();
         stage.setTitle("ChatIO!");
         stage.show();
+
+
     }
 
     public static void main(String[] args) {

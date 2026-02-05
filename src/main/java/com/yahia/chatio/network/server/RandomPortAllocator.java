@@ -1,4 +1,4 @@
-package com.yahia.chatio.server.network;
+package com.yahia.chatio.network.server;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;

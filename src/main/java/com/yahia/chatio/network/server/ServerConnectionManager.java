@@ -1,12 +1,10 @@
-package com.yahia.chatio.server.network;
+package com.yahia.chatio.network.server;
 
 import com.yahia.chatio.protocol.server.ServerConnection;
 import com.yahia.chatio.server.Server;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static java.util.Collections.*;
 
 public class ServerConnectionManager {
     private static final Map<ServerConnection, Server> runningServers = new ConcurrentHashMap<>();

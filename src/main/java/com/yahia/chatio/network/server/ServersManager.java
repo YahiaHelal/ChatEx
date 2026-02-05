@@ -1,10 +1,9 @@
-package com.yahia.chatio.server.network;
+package com.yahia.chatio.network.server;
 
 import com.yahia.chatio.protocol.server.ServerConnection;
 import com.yahia.chatio.server.Server;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
 
 //TODO: when a client tries to connect to a server name, we should query on central server containing every running server info
 public class ServersManager {

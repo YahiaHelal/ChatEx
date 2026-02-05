@@ -2,23 +2,22 @@ package com.yahia.chatio.ui.controllers;
 
 
 import com.yahia.chatio.protocol.server.ServerConnection;
-import com.yahia.chatio.server.network.PortAllocator;
-import com.yahia.chatio.server.network.RandomPortAllocator;
-import com.yahia.chatio.server.network.ServerConnectionManager;
-import com.yahia.chatio.server.network.ServersManager;
+import com.yahia.chatio.network.server.PortAllocator;
+import com.yahia.chatio.network.server.RandomPortAllocator;
+import com.yahia.chatio.network.server.ServerConnectionManager;
+import com.yahia.chatio.network.server.ServersManager;
 import com.yahia.chatio.ui.scenes.listeners.ServerLifeCycleListener;
 
 import com.yahia.chatio.utils.alerts.AlertUtils;
 import javafx.application.Platform;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
+
 
 //TODO: Create Central Server Containing all Running Servers by far
 //TODO: a map of [device's name] -> list of ServerConnectionManagers
+//TODO: replace ip in the ServerConnection with the device's name
+//TODO: a DeviceInfo class that gets the host device name that we will map with
 public class ServerLifeCycleController implements ServerLifeCycleListener {
     private static final PortAllocator randPortAllocator = new RandomPortAllocator();
 

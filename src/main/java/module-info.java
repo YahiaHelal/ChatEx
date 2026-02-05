@@ -6,6 +6,7 @@ module org.example.anotherchatapplicatoin {
     requires java.management;
     requires com.google.gson;
     requires java.logging;
+    requires javax.jmdns;
 
 
     opens com.yahia.chatio.app to javafx.fxml;
@@ -40,8 +41,10 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.chatio.server.session;
     exports com.yahia.chatio.client.base;
     opens com.yahia.chatio.client.base to javafx.fxml;
-    exports com.yahia.chatio.server.network;
-    opens com.yahia.chatio.server.network to javafx.fxml;
+    exports com.yahia.chatio.network;
+    opens com.yahia.chatio.network to javafx.fxml;
     opens com.yahia.chatio.protocol.terminate;
     exports com.yahia.chatio.protocol.terminate;
+    exports com.yahia.chatio.network.server;
+    opens com.yahia.chatio.network.server to javafx.fxml;
 }
