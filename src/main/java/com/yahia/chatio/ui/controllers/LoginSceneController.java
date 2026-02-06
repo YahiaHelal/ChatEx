@@ -2,6 +2,7 @@ package com.yahia.chatio.ui.controllers;
 
 
 import com.yahia.chatio.client.Client;
+import com.yahia.chatio.network.mdns.MdnsDiscovery;
 import com.yahia.chatio.protocol.codec.payload.json.handshake.JsonHandshakeRequestEncoder;
 import com.yahia.chatio.protocol.disconnect.DisconnectReason;
 import com.yahia.chatio.protocol.handshake.ConnectionStatus;
@@ -14,17 +15,20 @@ import com.yahia.chatio.utils.logging.LogManager;
 import com.yahia.chatio.protocol.handshake.HandshakeRequest;
 import javafx.application.Platform;
 
+import java.net.InetSocketAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoginSceneController implements LoginSceneListener {
     private final Logger LOGGER = LogManager.getLogger();
+    private final MdnsDiscovery discovery;
     private final SceneNavigator navigator;
 
     private Client client;
 
-    public  LoginSceneController(SceneNavigator navigator) {
+    public  LoginSceneController(SceneNavigator navigator, MdnsDiscovery discovery) {
         this.navigator = navigator;
+        this.discovery = discovery;
     }
 
 
@@ -51,9 +55,14 @@ public class LoginSceneController implements LoginSceneListener {
     }
 
     @Override
-    public void onLoginButtonClicked(String username, String ipAddress, String port) {
+    public InetSocketAddress getServerAddress(String serverName) {
+        return discovery.getServerAddress(serverName);
+    }
+
+    @Override
+    public void onLoginButtonClicked(String username, String ipAddress, int port) {
         try {
-            client = new Client(username, ipAddress, Integer.parseInt(port));
+            client = new Client(username, sanitizeIpAddress(ipAddress), port);
             initializeHandShakeListener();
             sendHandShake();
         }catch(Exception e) {
@@ -69,6 +78,13 @@ public class LoginSceneController implements LoginSceneListener {
 
     @Override
     public void onLaunchServerButtonClicked() {
-        navigator.showServerLauncherScene();
+        navigator.showServerLifeCycleScene();
+    }
+
+    private String sanitizeIpAddress(String ipAddress) {
+        if (ipAddress == null) {
+            return null;
+        }
+        return ipAddress.startsWith("/") ? ipAddress.substring(1) : ipAddress;
     }
 }

@@ -26,10 +26,9 @@ public class MdnsAnnouncer {
     }
 
 
-    public void stopService() throws Exception{
-        if(jmDNS != null && serviceInfo != null) {
-            jmDNS.unregisterService(serviceInfo);
-            jmDNS.close();
+    public void stopService(ServiceInfo info) throws Exception{
+        if(jmDNS != null && info != null) {
+            jmDNS.unregisterService(info);
             LOGGER.log(Level.INFO, String.format("Unregister Chat Server:  %s", serviceInfo.getName()));
         }
     }

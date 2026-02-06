@@ -41,8 +41,8 @@ module org.example.anotherchatapplicatoin {
     exports com.yahia.chatio.server.session;
     exports com.yahia.chatio.client.base;
     opens com.yahia.chatio.client.base to javafx.fxml;
-    exports com.yahia.chatio.network;
-    opens com.yahia.chatio.network to javafx.fxml;
+    exports com.yahia.chatio.network.mdns;
+    opens com.yahia.chatio.network.mdns to javafx.fxml;
     opens com.yahia.chatio.protocol.terminate;
     exports com.yahia.chatio.protocol.terminate;
     exports com.yahia.chatio.network.server;

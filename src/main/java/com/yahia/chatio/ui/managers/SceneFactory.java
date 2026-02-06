@@ -1,6 +1,7 @@
 package com.yahia.chatio.ui.managers;
 
 import com.yahia.chatio.client.Client;
+import com.yahia.chatio.network.mdns.MdnsDiscovery;
 import com.yahia.chatio.ui.scenes.ActiveServersScene;
 import com.yahia.chatio.ui.scenes.ChatScene;
 import com.yahia.chatio.ui.scenes.LoginScene;
@@ -12,6 +13,6 @@ public interface SceneFactory {
     LoginScene createLoginScene();
     ChatScene createChatScene(Client client);
     ActiveServersScene createActiveServersScene(SceneNavigator navigator, Client client);
-    ServerLifeCycleScene createServerLauncherScene();
+    ServerLifeCycleScene createServerLifeCycleScene(MdnsDiscovery discovery);
     ActiveServersSceneListener getServersController();
 }

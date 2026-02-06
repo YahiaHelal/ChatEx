@@ -1,6 +1,7 @@
 package com.yahia.chatio.ui.managers;
 
 import com.yahia.chatio.client.Client;
+import com.yahia.chatio.network.mdns.MdnsDiscovery;
 import com.yahia.chatio.ui.controllers.ActiveServersSceneController;
 import com.yahia.chatio.ui.controllers.ChatSceneController;
 import com.yahia.chatio.ui.controllers.LoginSceneController;
@@ -16,8 +17,11 @@ public class DefaultSceneFactory implements SceneFactory{
     private final Stage stage;
     private ActiveServersSceneListener serversSceneController;
     private SceneNavigator navigator;
-    public DefaultSceneFactory(Stage stage) {
+    private final MdnsDiscovery discovery;
+
+    public DefaultSceneFactory(Stage stage, MdnsDiscovery discovery) {
         this.stage = stage;
+        this.discovery = discovery;
     }
     public void setNavigator(SceneNavigator navigator) {
         this.navigator = navigator;
@@ -34,7 +38,7 @@ public class DefaultSceneFactory implements SceneFactory{
     @Override
     public LoginScene createLoginScene() {
         LoginScene loginScene = new LoginScene();
-        loginScene.wireController(new LoginSceneController(navigator));
+        loginScene.wireController(new LoginSceneController(navigator, discovery));
         return loginScene;
     }
 
@@ -54,9 +58,9 @@ public class DefaultSceneFactory implements SceneFactory{
     }
 
     @Override
-    public ServerLifeCycleScene createServerLauncherScene() {
+    public ServerLifeCycleScene createServerLifeCycleScene(MdnsDiscovery discovery) {
         ServerLifeCycleScene launcherScene = new ServerLifeCycleScene();
-        launcherScene.wireController(new ServerLifeCycleController());
+        launcherScene.wireController(new ServerLifeCycleController(discovery));
         return launcherScene;
     }
 }

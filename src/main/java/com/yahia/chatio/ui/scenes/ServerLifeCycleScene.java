@@ -12,7 +12,6 @@ import javafx.scene.layout.GridPane;
 public class ServerLifeCycleScene {
 
     private GridPane root;
-    private TextField portTextField;
     private TextField serverNameTextField;
     private Button launchButton;
     private Button terminateButton;

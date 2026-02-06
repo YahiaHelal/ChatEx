@@ -8,11 +8,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 
+import java.net.InetSocketAddress;
+
 
 public class LoginScene extends AbstractLoginScene {
     private TextField usernameTextField;
-    private TextField ipAddressTextField;
-    private TextField portTextField;
+    private TextField serverName;
     private Button loginButton;
     private Button connectedServersButton;
     private Button launchServerButton;
@@ -29,12 +30,6 @@ public class LoginScene extends AbstractLoginScene {
         init();
     }
 
-    public String getIpAddress() {
-        return ipAddressTextField.getText();
-    }
-    public String getPort(){
-        return portTextField.getText();
-    }
     public String getUsername() {
         return usernameTextField.getText();
     }
@@ -52,27 +47,25 @@ public class LoginScene extends AbstractLoginScene {
     @Override
     protected void initControls() {
         usernameTextField = new TextField();
-        ipAddressTextField = new TextField();
-        portTextField = new TextField();
+        serverName = new TextField();
+
         loginButton = new Button("Login");
         connectedServersButton = new Button("Connected Servers"); //TODO: running servers
         launchServerButton = new Button("Launch A Server"); //TODO: server settings
         loginGrid = new GridPane();
         loginScene = new Scene(loginGrid, WIDTH, HEIGHT);
         usernameTextField.setPromptText("Username");
-        ipAddressTextField.setPromptText("IP Address");
-        portTextField.setPromptText("Port");
+        serverName.setPromptText("Server name");
 
     }
 
     @Override
     protected void buildUi() {
         loginGrid.add(usernameTextField, 0, 0);
-        loginGrid.add(ipAddressTextField, 0, 1);
-        loginGrid.add(portTextField, 0, 2);
-        loginGrid.add(loginButton, 0, 3);
-        loginGrid.add(connectedServersButton, 0, 4);
-        loginGrid.add(launchServerButton, 0, 5);
+        loginGrid.add(serverName, 0, 1);;
+        loginGrid.add(loginButton, 0, 2);
+        loginGrid.add(connectedServersButton, 0, 3);
+        loginGrid.add(launchServerButton, 0, 4);
         LayoutUtils.setLoginGridSpacing(loginGrid);
     }
 
@@ -88,7 +81,8 @@ public class LoginScene extends AbstractLoginScene {
     @Override
     protected void setUpActions() {
         loginButton.setOnAction(actionEvent -> {
-            loginSceneListener.onLoginButtonClicked(getUsername(), getIpAddress(), getPort());
+            InetSocketAddress addr = loginSceneListener.getServerAddress(serverName.getText());
+            loginSceneListener.onLoginButtonClicked(getUsername(), addr.getAddress().toString(), addr.getPort());
         });
 
         connectedServersButton.setOnAction(actionEvent -> {
