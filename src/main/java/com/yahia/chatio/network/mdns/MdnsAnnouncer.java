@@ -4,37 +4,53 @@ import com.yahia.chatio.utils.logging.LogManager;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceInfo;
+import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MdnsAnnouncer {
-    private JmDNS jmDNS;
-    private ServiceInfo serviceInfo;
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static MdnsAnnouncer INSTANCE;
 
+    private JmDNS jmDNS;
+    private final Map<String, ServiceInfo> services = new ConcurrentHashMap<>();
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final String CHAT_SERVICE_TYPE = "_chat_._tcp.local.";
 
-    public void announce(String serverName, int port) throws Exception {
-        InetAddress addr = InetAddress.getLocalHost();
-        jmDNS = JmDNS.create(addr);
 
-        //NOTE: may add No. users to the metadata
-        serviceInfo = ServiceInfo.create(CHAT_SERVICE_TYPE, serverName, port, "");
-        jmDNS.registerService(serviceInfo);
-        LOGGER.log(Level.INFO, String.format("New Chat Server Announced: %s", serviceInfo.getName()));
+
+    private MdnsAnnouncer() throws IOException {
+        InetAddress addr = InetAddress.getLocalHost();
+        jmDNS = JmDNS.create(addr); // one creation per machine [reserved port for mdns]
+    }
+
+    public static MdnsAnnouncer getInstance() throws IOException {
+        if(INSTANCE == null) {
+            INSTANCE = new MdnsAnnouncer();
+        }
+        return INSTANCE;
+    }
+
+    public void announce(String serverName, int port) throws Exception {
+        ServiceInfo info = ServiceInfo.create(CHAT_SERVICE_TYPE, serverName, port, "");
+        jmDNS.registerService(info);
+        services.put(serverName, info);
+        LOGGER.log(Level.INFO, String.format("New Chat Server Announced: %s", services));
     }
 
 
-    public void stopService(ServiceInfo info) throws Exception{
-        if(jmDNS != null && info != null) {
+
+    public void stopService(String serverName){
+        ServiceInfo info = services.remove(serverName);
+        if(jmDNS != null) {
             jmDNS.unregisterService(info);
-            LOGGER.log(Level.INFO, String.format("Unregister Chat Server:  %s", serviceInfo.getName()));
+            LOGGER.log(Level.INFO, String.format("Unregister Chat Server:  %s", serverName));
         }
     }
 
-    //NOTE: any MdnsAnnouncer instance can stop all services of a certain service type
-    public void stopAll() throws Exception{
+    public void shutdown() throws Exception{
         if(jmDNS != null) {
             jmDNS.unregisterAllServices();
             jmDNS.close();

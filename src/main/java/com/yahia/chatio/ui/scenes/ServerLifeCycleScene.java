@@ -1,29 +1,37 @@
 package com.yahia.chatio.ui.scenes;
 
-import com.yahia.chatio.protocol.server.ServerConnection;
+import com.yahia.chatio.ui.controls.PromptTextField;
 import com.yahia.chatio.ui.scenes.listeners.ServerLifeCycleListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+
+import java.util.Objects;
 
 public class ServerLifeCycleScene {
 
-    private GridPane root;
-    private TextField serverNameTextField;
+    private BorderPane root;
+    private PromptTextField serverNameField;
     private Button launchButton;
     private Button terminateButton;
+    private Button returnButton;
     private Scene scene;
+
+    private final ImageView returnIcon = new ImageView(
+            new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icons/return.png")))
+    );
 
     private ServerLifeCycleListener serverLifeCycleListener;
 
-    //TODO: add server capacity as a field entered by the user
     public ServerLifeCycleScene() {
         initControls();
-        applyConstraints();
         buildUi();
+        applyConstraints();
     }
 
     public Scene getScene() {
@@ -35,51 +43,65 @@ public class ServerLifeCycleScene {
         setupActions();
     }
 
-
     private void initControls() {
-        root = new GridPane();
+        root = new BorderPane();
 
-        serverNameTextField = new TextField();
-        serverNameTextField.setPromptText("Server Name");
 
+        serverNameField = new PromptTextField("Server Name");
         launchButton = new Button("Launch Server");
         terminateButton = new Button("Terminate Server");
-        scene = new Scene(root, 600, 400);
 
+        returnButton = new Button();
+        returnButton.setGraphic(returnIcon);
+        returnIcon.setFitWidth(16);
+        returnIcon.setFitHeight(16);
+
+        scene = new Scene(root, 600, 400);
     }
 
     private void buildUi() {
-        root.add(serverNameTextField, 0, 0);
-        root.add(launchButton, 0, 1);
-        root.add(terminateButton, 0, 2);
+
+        BorderPane topBar = new BorderPane();
+        topBar.setPadding(new Insets(10));
+        topBar.setLeft(returnButton);
+        root.setTop(topBar);
+
+        VBox centerBox = new VBox(15, serverNameField, launchButton, terminateButton);
+        centerBox.setAlignment(Pos.CENTER);
+        root.setCenter(centerBox);
     }
 
     private void applyConstraints() {
-        root.setAlignment(Pos.CENTER);
-        root.setHgap(10);
-        root.setVgap(15);
-        root.setPadding(new Insets(20));
+        double standardWidth = 260;
+        double standardHeight = 35;
 
-        serverNameTextField.setPrefWidth(260);
 
-        launchButton.setPrefWidth(260);
-        launchButton.setPrefHeight(35);
+        serverNameField.setPrefWidth(standardWidth);
+        serverNameField.setMaxWidth(standardWidth);
 
-        terminateButton.setPrefWidth(260);
-        terminateButton.setPrefHeight(35);
+        launchButton.setPrefWidth(standardWidth);
+        launchButton.setPrefHeight(standardHeight);
+
+        terminateButton.setPrefWidth(standardWidth);
+        terminateButton.setPrefHeight(standardHeight);
     }
-
 
     private void setupActions() {
         launchButton.setOnAction(event -> {
             if (serverLifeCycleListener != null) {
-                serverLifeCycleListener.onLaunch(serverNameTextField.getText());
+                serverLifeCycleListener.onLaunch(serverNameField.getText());
             }
         });
 
-        terminateButton.setOnAction(actionEvent -> {
-            if(serverLifeCycleListener != null) {
-                serverLifeCycleListener.onTerminate(serverNameTextField.getText());
+        terminateButton.setOnAction(event -> {
+            if (serverLifeCycleListener != null) {
+                serverLifeCycleListener.onTerminate(serverNameField.getText());
+            }
+        });
+
+        returnButton.setOnAction(event -> {
+            if (serverLifeCycleListener != null) {
+                serverLifeCycleListener.onReturnButtonClicked();
             }
         });
     }

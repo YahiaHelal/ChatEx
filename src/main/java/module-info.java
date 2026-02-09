@@ -7,6 +7,7 @@ module org.example.anotherchatapplicatoin {
     requires com.google.gson;
     requires java.logging;
     requires javax.jmdns;
+    requires java.naming;
 
 
     opens com.yahia.chatio.app to javafx.fxml;

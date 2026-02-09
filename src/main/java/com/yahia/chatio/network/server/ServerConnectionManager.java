@@ -3,6 +3,7 @@ package com.yahia.chatio.network.server;
 import com.yahia.chatio.protocol.server.ServerConnection;
 import com.yahia.chatio.server.Server;
 
+import javax.naming.InvalidNameException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -17,20 +18,27 @@ public class ServerConnectionManager {
         runningServers.put(connection,server);
     }
 
-    public static Server getServer(ServerConnection connection) {
-        return runningServers.get(connection);
+    public static ServerConnection getServerConnection(String serverName) {
+        return serverInfo.get(serverName);
     }
 
-    public static boolean isServerRunning(ServerConnection connection) {
-        return runningServers.containsKey(connection);
+    public static Server getServer(String serverName) {
+        return runningServers.get(serverInfo.get(serverName));
     }
 
-    public static void removeServer(ServerConnection connection) {
-        runningServers.remove(connection);
+    public static boolean isServerRunning(String serverName) {
+        return serverInfo.containsKey(serverName);
     }
 
-    public static ServerConnection getServerConnection(String name) {
-        return serverInfo.get(name);
+    public static void removeServer(String serverName) {
+        runningServers.remove(serverInfo.get(serverName));
+        serverInfo.remove(serverName);
+    }
+
+    public static void validateServerName(String serverName) throws InvalidNameException{
+        if(serverName.isBlank()) {
+            throw new InvalidNameException("Server Name cannot be empty");
+        }
     }
 
 }

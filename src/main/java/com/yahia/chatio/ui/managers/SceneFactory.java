@@ -8,6 +8,8 @@ import com.yahia.chatio.ui.scenes.LoginScene;
 import com.yahia.chatio.ui.scenes.ServerLifeCycleScene;
 import com.yahia.chatio.ui.scenes.listeners.ActiveServersSceneListener;
 
+import java.io.IOException;
+
 
 public interface SceneFactory {
     LoginScene createLoginScene();

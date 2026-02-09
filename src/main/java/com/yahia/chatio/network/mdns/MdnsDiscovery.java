@@ -64,4 +64,8 @@ public class MdnsDiscovery {
     public InetSocketAddress getServerAddress(String serverName) {
         return discoveredServers.get(serverName);
     }
+
+    public void removeServer(String serverName) {
+        discoveredServers.remove(serverName);
+    }
 }

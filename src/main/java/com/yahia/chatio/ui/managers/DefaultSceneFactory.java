@@ -13,6 +13,8 @@ import com.yahia.chatio.ui.scenes.ServerLifeCycleScene;
 import com.yahia.chatio.ui.scenes.listeners.ActiveServersSceneListener;
 import javafx.stage.Stage;
 
+import java.io.IOException;
+
 public class DefaultSceneFactory implements SceneFactory{
     private final Stage stage;
     private ActiveServersSceneListener serversSceneController;
@@ -60,7 +62,7 @@ public class DefaultSceneFactory implements SceneFactory{
     @Override
     public ServerLifeCycleScene createServerLifeCycleScene(MdnsDiscovery discovery) {
         ServerLifeCycleScene launcherScene = new ServerLifeCycleScene();
-        launcherScene.wireController(new ServerLifeCycleController(discovery));
+        launcherScene.wireController(new ServerLifeCycleController(navigator, discovery));
         return launcherScene;
     }
 }

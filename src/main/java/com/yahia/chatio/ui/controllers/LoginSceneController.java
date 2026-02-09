@@ -54,19 +54,19 @@ public class LoginSceneController implements LoginSceneListener {
         client.sendMessage(new CommunicationPacket(PacketType.HANDSHAKE_REQUEST, username));
     }
 
-    @Override
-    public InetSocketAddress getServerAddress(String serverName) {
-        return discovery.getServerAddress(serverName);
-    }
+
 
     @Override
-    public void onLoginButtonClicked(String username, String ipAddress, int port) {
+    public void onLoginButtonClicked(String username, String serverName) {
         try {
+            InetSocketAddress addr = discovery.getServerAddress(serverName);
+            String ipAddress = addr.getAddress().toString();
+            int port = addr.getPort();
             client = new Client(username, sanitizeIpAddress(ipAddress), port);
             initializeHandShakeListener();
             sendHandShake();
         }catch(Exception e) {
-            LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s:%s", username, ipAddress, port));
+            LOGGER.log(Level.SEVERE, String.format("Client %s couldn't reach the server %s", username, serverName));
             AlertUtils.warn(ConnectionStatus.REJECT_IO.message(), "Login Failed").showAndWait();
         }
     }
