@@ -10,11 +10,10 @@ import java.io.IOException;
 public class ServersManager {
 
 
-    public static boolean runServer(String serverName) throws Exception {
+    public static boolean runServer(ServerConnection connection) throws InvalidNameException {
 
-        ServerConnectionManager.validateServerName(serverName);
-        if(ServerConnectionManager.isServerRunning(serverName)) return false;
-        ServerConnection connection = ServerConnectionManager.getServerConnection(serverName);
+        ServerConnectionManager.validateServerName(connection.name());
+        if(ServerConnectionManager.isServerRunning(connection.name())) return false;
         Server chatServer = new Server(connection);
         chatServer.start();
         ServerConnectionManager.addServer(connection, chatServer);

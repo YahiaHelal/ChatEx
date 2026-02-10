@@ -27,6 +27,7 @@ import com.yahia.chatio.protocol.messaging.BroadCastMessage;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,8 +44,7 @@ public class Client extends AbstractClient {
     private final PacketHandlerRegistry handlerRegistry;
 
 
-
-    //TODO: client fetches the server's old messages when connected, from a NoSQL DB
+    
     public Client(String clientName, String serverIp, int port) throws IOException {
         this.clientName = clientName;
         handlerRegistry = new PacketHandlerRegistry();

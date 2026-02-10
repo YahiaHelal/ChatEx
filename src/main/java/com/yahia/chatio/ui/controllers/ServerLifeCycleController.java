@@ -44,21 +44,21 @@ public class ServerLifeCycleController implements ServerLifeCycleListener {
     @Override
     public void onLaunch(String serverName) {
         int port = randPortAllocator.allocate();
+        ServerConnection connection = new ServerConnection(serverName, port);
         Platform.runLater(() -> {
             try {
-                if(ServersManager.runServer(serverName)) {
+                if(ServersManager.runServer(connection)) {
                     AlertUtils.info("Server is now available", "success").showAndWait();
-                    try {
-                        announcer.announce(serverName, port);
-                    }catch (Exception e) {
-                        AlertUtils.error("Unidentified host", "Network error").showAndWait();
-                        LOGGER.log(Level.SEVERE, String.format("Network error has occurred: %s", e.getMessage()));
-                    }
+                    announcer.announce(connection);
+                    LOGGER.log(Level.INFO, "Announcement Success");
                 }else {
                     AlertUtils.warn("Server is already running", "Launch Failed").showAndWait();
                 }
-            }catch (Exception e) {
+            }catch (InvalidNameException e) {
                 AlertUtils.error("Invalid Server Info", "Launch Failed").showAndWait();
+            }catch (IOException ex) {
+                AlertUtils.error("Unidentified host", "Network error").showAndWait();
+                LOGGER.log(Level.SEVERE, String.format("Network error has occurred: %s", ex.getMessage()));
             }
         });
     }

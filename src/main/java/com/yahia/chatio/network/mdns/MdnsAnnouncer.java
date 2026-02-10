@@ -1,5 +1,6 @@
 package com.yahia.chatio.network.mdns;
 
+import com.yahia.chatio.protocol.server.ServerConnection;
 import com.yahia.chatio.utils.logging.LogManager;
 
 import javax.jmdns.JmDNS;
@@ -33,10 +34,10 @@ public class MdnsAnnouncer {
         return INSTANCE;
     }
 
-    public void announce(String serverName, int port) throws Exception {
-        ServiceInfo info = ServiceInfo.create(CHAT_SERVICE_TYPE, serverName, port, "");
+    public void announce(ServerConnection connection) throws IOException {
+        ServiceInfo info = ServiceInfo.create(CHAT_SERVICE_TYPE, connection.name(), connection.port(), "");
         jmDNS.registerService(info);
-        services.put(serverName, info);
+        services.put(connection.name(), info);
         LOGGER.log(Level.INFO, String.format("New Chat Server Announced: %s", services));
     }
 
