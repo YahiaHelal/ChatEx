@@ -10,16 +10,18 @@ import java.io.IOException;
 public class ServersManager {
 
 
-    public static boolean runServer(ServerConnection connection) throws InvalidNameException {
-
+    public static boolean runServer(ServerConnection connection) throws InvalidNameException, IOException {
         ServerConnectionManager.validateServerName(connection.name());
-        if(ServerConnectionManager.isServerRunning(connection.name())) return false;
+        if(ServerConnectionManager.isServerRunning(connection.name())) {
+            return false;
+        }
         Server chatServer = new Server(connection);
         chatServer.start();
         ServerConnectionManager.addServer(connection, chatServer);
         return true;
     }
 
+    //BUG: terminate server gives error when empty / running / not running server name
     public static boolean terminateServer(String serverName) throws InvalidNameException, IOException {
         ServerConnectionManager.validateServerName(serverName);
         if(ServerConnectionManager.isServerRunning(serverName)) {

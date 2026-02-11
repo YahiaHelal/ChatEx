@@ -11,16 +11,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class MainApplication extends Application {
+    private MdnsDiscovery discovery;
     @Override
-
-    public void start(Stage stage){
-
-        MdnsDiscovery discovery = new MdnsDiscovery();
-        try {
-            discovery.start();
-        }catch (Exception e) {
-            System.out.printf(e.getMessage());
-        }
+    public void start(Stage stage) throws Exception{
+        discovery = new MdnsDiscovery();
+        discovery.start();
         DefaultSceneFactory sceneFactory = new DefaultSceneFactory(stage, discovery);
         SceneManager sceneManager = new SceneManager(stage, sceneFactory, discovery);
         sceneFactory.setNavigator(sceneManager);
@@ -28,6 +23,13 @@ public class MainApplication extends Application {
         sceneManager.showLoginScene();
         stage.setTitle("ChatIO!");
         stage.show();
+    }
+
+    @Override
+    public void stop() {
+        if(discovery != null) {
+            discovery.close();
+        }
     }
 
     public static void main(String[] args) {

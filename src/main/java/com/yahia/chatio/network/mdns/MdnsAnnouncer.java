@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MdnsAnnouncer {
+public class MdnsAnnouncer implements AutoCloseable {
     private static MdnsAnnouncer INSTANCE;
 
     private JmDNS jmDNS;
@@ -38,7 +38,7 @@ public class MdnsAnnouncer {
         ServiceInfo info = ServiceInfo.create(CHAT_SERVICE_TYPE, connection.name(), connection.port(), "");
         jmDNS.registerService(info);
         services.put(connection.name(), info);
-        LOGGER.log(Level.INFO, String.format("New Chat Server Announced: %s", services));
+        LOGGER.log(Level.INFO, String.format("New Chat Server Announced: %s", connection.name()));
     }
 
 
@@ -55,6 +55,19 @@ public class MdnsAnnouncer {
         if(jmDNS != null) {
             jmDNS.unregisterAllServices();
             jmDNS.close();
+        }
+    }
+
+    @Override
+    public void close() throws Exception {
+        if(jmDNS != null) {
+            try {
+                jmDNS.close();
+            }catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Couldn't close mDNS Announcer");
+            }finally {
+                jmDNS = null;
+            }
         }
     }
 }

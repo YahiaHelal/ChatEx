@@ -1,11 +1,13 @@
 package com.yahia.chatio.network.mdns;
 
 import com.yahia.chatio.utils.logging.LogManager;
+import javafx.application.Platform;
 
 import javax.jmdns.JmDNS;
 import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -13,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class MdnsDiscovery {
+public class MdnsDiscovery implements AutoCloseable {
     private static final String SERVICE_TYPE = "_chat_._tcp.local.";
     private static final Logger LOGGER = LogManager.getLogger();
     private JmDNS jmDNS;
@@ -32,34 +34,52 @@ public class MdnsDiscovery {
                         serviceEvent.getName(),
                         true
                 );
+                Platform.runLater(() -> {
+                    // update ui
+                });
             }
 
             @Override
-            public void serviceRemoved(ServiceEvent serviceEvent) {
-                String name = serviceEvent.getName();
-                discoveredServers.remove(name);
-                LOGGER.log(Level.INFO, String.format("Server %s Left", name));
+            public void serviceRemoved(ServiceEvent event) {
+                discoveredServers.remove(event.getName());
+                LOGGER.log(Level.INFO, String.format("Server %s Left", event.getName()));
+
+                Platform.runLater(() -> {
+                    // update ui
+                });
             }
 
             @Override
-            public void serviceResolved(ServiceEvent serviceEvent) {
-                ServiceInfo info = serviceEvent.getInfo();
+            public void serviceResolved(ServiceEvent event) {
+                ServiceInfo info = event.getInfo();
 
-                String serverName = info.getName();
                 InetAddress[] ipv4 = info.getInet4Addresses();
-                int port = info.getPort();
-                if(ipv4.length == 0) {
-                    LOGGER.log(Level.WARNING, String.format("No IPv4 address for %s", serverName));
+                if(info.getInet4Addresses().length == 0) {
+                    LOGGER.log(Level.WARNING, String.format("No IPv4 address for %s", info.getName()));
                     return;
                 }
-                String ip = ipv4[0].getHostAddress();
-                discoveredServers.put(serverName, new InetSocketAddress(ip, port));
-                LOGGER.log(Level.INFO, String.format("Server found: Name: %s, IP: %s, Port: %d", serverName, ip, port));
 
-                //update ui ?
+                String ip = ipv4[0].getHostAddress();
+                int port = info.getPort();
+
+                discoveredServers.put(event.getName(), new InetSocketAddress(ip, port));
+                LOGGER.log(Level.INFO, String.format("Server found: Name: %s, IP: %s, Port: %d", event.getName(), info.getInet4Addresses()[0], info.getPort()));
             }
         });
     }
+
+    public synchronized void close() {
+        if(jmDNS != null) {
+            try {
+                jmDNS.close();
+            }catch (IOException e) {
+                LOGGER.log(Level.WARNING, "Failed to close mDNS discovery", e);
+            }finally {
+                jmDNS = null;
+            }
+        }
+    }
+
 
     public InetSocketAddress getServerAddress(String serverName) {
         return discoveredServers.get(serverName);

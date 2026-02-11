@@ -11,7 +11,7 @@ public class JsonServerInfoCodecTest {
 
     @Test
     void encodesAndDecodesServerInfo() {
-        ServerConnection serverConnection = new ServerConnection("192.168.1.1", 9000, "test-server");
+        ServerConnection serverConnection = new ServerConnection("192.168.1.1", 9000);
         JsonServerInfoEncoder encoder = new JsonServerInfoEncoder();
         JsonServerInfoDecoder decoder = new JsonServerInfoDecoder();
 

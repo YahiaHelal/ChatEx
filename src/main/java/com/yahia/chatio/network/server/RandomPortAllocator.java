@@ -14,7 +14,7 @@ public class RandomPortAllocator implements PortAllocator{
         int port;
         do {
              port = ThreadLocalRandom.current().nextInt(startGen, endGen + 1);
-        }while(runningPorts.contains(port));
+        }while(!runningPorts.add(port));
         return port;
     }
 
