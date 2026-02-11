@@ -16,13 +16,11 @@ import com.yahia.chatio.protocol.handshake.HandshakeRequest;
 import javafx.application.Platform;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class LoginSceneController implements LoginSceneListener {
-    private static final int MDNS_LOOKUP_RETRIES = 10;
-    private static final long MDNS_LOOKUP_RETRY_DELAY = 250L;
-
     private final Logger LOGGER = LogManager.getLogger();
     private final MdnsDiscovery discovery;
     private final SceneNavigator navigator;
@@ -61,14 +59,26 @@ public class LoginSceneController implements LoginSceneListener {
 
     @Override
     public void onLoginButtonClicked(String username, String serverName) {
+        if(username.isBlank()) {
+            Platform.runLater(() -> {
+                AlertUtils.error("Invalid username", "Login Failed").showAndWait();
+            });
+            return;
+        }
         new Thread(() -> {
             try {
-                InetSocketAddress addr = awaitServerAddress(serverName);
+                InetSocketAddress addr = discovery.getServerAddress(serverName);
+
+                //TODO: remove after implementing loading screen when launching a new server
                 if(addr == null || addr.getAddress() == null) {
-                    throw new IllegalStateException("server address is not yet resolved");
+                    Platform.runLater(() -> {
+                        AlertUtils.warn("Server not found or not yet resolved", "Login Failed").showAndWait();
+                    });
+                    return;
                 }
                 String ipAddress = addr.getAddress().toString();
                 int port = addr.getPort();
+
                 client = new Client(username, sanitizeIpAddress(ipAddress), port);
                 initializeHandShakeListener();
                 sendHandShake();
@@ -95,17 +105,5 @@ public class LoginSceneController implements LoginSceneListener {
             return null;
         }
         return ipAddress.startsWith("/") ? ipAddress.substring(1) : ipAddress;
-    }
-
-    private InetSocketAddress awaitServerAddress(String serverName) throws InterruptedException{
-        InetSocketAddress addr = null;
-        for(int i = 0; i < MDNS_LOOKUP_RETRIES; i++) {
-            addr = discovery.getServerAddress(serverName);
-            if(addr != null && addr.getAddress() != null) {
-                return addr;
-            }
-            Thread.sleep(MDNS_LOOKUP_RETRY_DELAY);
-        }
-        return addr;
     }
 }

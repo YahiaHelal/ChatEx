@@ -10,6 +10,8 @@ import java.io.IOException;
 public class ServersManager {
 
 
+    //TODO: show loading screen until server is resolved by mDNS
+    //BUG: each client can run a server with the same server name
     public static boolean runServer(ServerConnection connection) throws InvalidNameException, IOException {
         ServerConnectionManager.validateServerName(connection.name());
         if(ServerConnectionManager.isServerRunning(connection.name())) {
@@ -21,7 +23,6 @@ public class ServersManager {
         return true;
     }
 
-    //BUG: terminate server gives error when empty / running / not running server name
     public static boolean terminateServer(String serverName) throws InvalidNameException, IOException {
         ServerConnectionManager.validateServerName(serverName);
         if(ServerConnectionManager.isServerRunning(serverName)) {

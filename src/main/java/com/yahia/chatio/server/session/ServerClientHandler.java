@@ -27,13 +27,11 @@ public class ServerClientHandler implements Runnable {
     private final MessageSender sender;
     private final MessageReceiver receiver;
     private final Server CHAT_SERVER;
-    private final Socket clientSocket;
     private String clientUsername;
     private final PacketHandlerRegistry handlerRegistry;
 
     //NOTE: only fired when a new client is authenticated by the HandShake
     public ServerClientHandler(Socket clientSocket, Server chatServer, String clientUsername) throws IOException {
-        this.clientSocket = clientSocket;
         sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
         receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
         this.CHAT_SERVER = chatServer;
@@ -71,7 +69,6 @@ public class ServerClientHandler implements Runnable {
         JsonDisconnectRequestDecoder decoder = new JsonDisconnectRequestDecoder();
         DisconnectRequest request = decoder.decode(packet.payload());
         CHAT_SERVER.removeClient(this, request.username());
-        closeClientSocket();
     }
 
     @Override
@@ -85,19 +82,10 @@ public class ServerClientHandler implements Runnable {
             LOGGER.log(Level.WARNING, "Server couldn't receive client message");
         }finally {
             CHAT_SERVER.removeClient(this, clientUsername);
-            closeClientSocket();
         }
     }
 
-    private void closeClientSocket(){
-        try {
-            if(clientSocket != null && !clientSocket.isClosed()) {
-                clientSocket.close();
-            }
-        }catch (IOException e) {
-            LOGGER.log(Level.WARNING, "Failed close client socket");
-        }
-    }
+
 
 
 }

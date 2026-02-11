@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 
 //TODO: make the server more like an API, that handles jobs like register/un-register clients, processing handshakes and stuff
 public class Server {
-    private static final int HANDSHAKE_TIMEOUT_MS = 10_000;
     private volatile boolean running;
 
     private final ServerConnection serverConnection;
@@ -85,7 +84,7 @@ public class Server {
 
 
     public synchronized void start() throws IOException {
-        if(!running) return;
+        if(running) return;
         run();
         running = true;
         listen();
@@ -98,14 +97,13 @@ public class Server {
     }
 
     public void removeClient(ServerClientHandler clientHandler, String clientUsername) {
-        boolean removed = CLIENTS.remove(clientHandler);
+        if(!CLIENT_NAMES.contains(clientUsername)) return;
+        CLIENTS.remove(clientHandler);
         CLIENT_NAMES.remove(clientUsername);
-        if(removed) {
-            LOGGER.log(Level.INFO, String.format("%s has disconnected", clientUsername));
-            JsonBroadcastMessageEncoder encoder = new JsonBroadcastMessageEncoder();
-            String info = encoder.encode(new BroadCastMessage("SERVER", String.format("%s has been disconnected", clientUsername)));
-            broadCastPacket(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, info));
-        }
+        LOGGER.log(Level.INFO, String.format("%s has disconnected", clientUsername));
+        JsonBroadcastMessageEncoder encoder = new JsonBroadcastMessageEncoder();
+        String info = encoder.encode(new BroadCastMessage("SERVER", String.format("%s has been disconnected", clientUsername)));
+        broadCastPacket(new CommunicationPacket(PacketType.BROADCAST_MESSAGE, info));
     }
 
     private void registerClient(String username, ServerClientHandler handler) {
@@ -134,16 +132,11 @@ public class Server {
     }
 
     private void handleAccept(ServerHandshakeContext ctx, HandshakeRequest request) throws IOException {
-        try {
-            ServerClientHandler clientHandler = new ServerClientHandler(ctx.clientSocket(), this, request.username());
-            registerClient(request.username(), clientHandler);
-            LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
-            new Thread(clientHandler, "server-client-handler-thread").start();
-        }catch (IOException e) {
-            rollbackUsername(request.username());
-            closeQuietly(ctx.clientSocket());
-            throw e;
-        }
+        ServerClientHandler clientHandler = new ServerClientHandler(ctx.clientSocket(), this, request.username());
+        registerClient(request.username(), clientHandler);
+        LOGGER.log(Level.FINE, String.format("Number of Clients connected to %s is %d", serverSocket.getInetAddress().getHostAddress(), CLIENTS.size()));
+        new Thread(clientHandler, "server-client-handler-thread").start();
+
     }
 
 
@@ -155,47 +148,26 @@ public class Server {
 
         CommunicationPacket packet = ctx.receiver().receive();
 
-        if(packet == null || packet.type() != PacketType.HANDSHAKE_REQUEST) {
-            closeQuietly(ctx.clientSocket());
-            return;
-        }
-
-        HandshakeRequest request;
-        try {
-            request = decoder.decode(packet.payload());
-        }catch (RuntimeException e) {
-            LOGGER.log(Level.WARNING, "Malformed handshake request payload");
-            closeQuietly(ctx.clientSocket());
-            return;
-        }
-        String username = request.username();
-        if(username == null || username.isBlank()) {
-            closeQuietly(ctx.clientSocket());
-            return;
-        }
-        ConnectionStatus status = reserveUsername(username);
+        HandshakeRequest request = decoder.decode(packet.payload());
+        ConnectionStatus status = reserveUsername(request.username());
 
         String response = encoder.encode(new HandshakeResponse(status));
 
-
         ctx.sender().send(new CommunicationPacket(PacketType.HANDSHAKE_RESPONSE, response));
+
         LOGGER.log(Level.INFO, String.format("Handshake status: %s", status));
         if(status == ConnectionStatus.ACCEPT) {
            handleAccept(ctx, request);
-        }else {
-            closeQuietly(ctx.clientSocket());
         }
     }
 
     private void handleClient(Socket clientSocket)  {
         try {
-            clientSocket.setSoTimeout(HANDSHAKE_TIMEOUT_MS);
             MessageSender sender = new SocketMessageSender(new PrintWriter(clientSocket.getOutputStream(), true), new JsonPacketEncoder());
             MessageReceiver receiver = new SocketMessageReceiver(new BufferedReader(new InputStreamReader(clientSocket.getInputStream())), new JsonPacketDecoder());
             handleHandshakeRequest(new ServerHandshakeContext(sender, receiver, clientSocket));
         }catch (IOException e) {
             LOGGER.log(Level.WARNING, "Failed while handling client handshake");
-            closeQuietly(clientSocket);
         }
     }
 
@@ -205,7 +177,7 @@ public class Server {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     LOGGER.log(Level.INFO, "Server receives a new connection");
-                    new Thread(() -> handleClient(clientSocket), "server-handshake-thread");
+                    new Thread(() -> handleClient(clientSocket), "server-handshake-thread").start();
                 }catch (IOException e) {
                     if(running) {
                         LOGGER.log(Level.WARNING, "Server couldn't connect to client", e);
@@ -216,14 +188,5 @@ public class Server {
         }, "server-accept-thread").start();
     }
 
-    private void closeQuietly(Socket clientSocket) {
-        try {
-            if(clientSocket != null && !clientSocket.isClosed()) {
-                clientSocket.close();
-            }
-        }catch (IOException ignore) {
-            // ignore
-        }
-    }
     
 }

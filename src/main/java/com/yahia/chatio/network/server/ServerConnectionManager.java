@@ -17,6 +17,8 @@ public class ServerConnectionManager {
     private ServerConnectionManager() {}
 
 
+    //BUG: need to check the server name by mDNS
+
     public static void addServer(ServerConnection connection, Server server) {
         serverInfo.put(connection.name(), connection);
         runningServers.put(connection,server);
@@ -40,6 +42,7 @@ public class ServerConnectionManager {
             LOGGER.log(Level.INFO, "ServerName is blank : %s", serverName);
             throw new InvalidNameException("Server Name cannot be empty");
         }
+
     }
 
 }
